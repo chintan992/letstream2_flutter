@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import '../../../core/models/movie.dart';
+import '../../../core/models/tv_show.dart';
 
 class PlayerScreen extends StatefulWidget {
-  final String url;
+  final dynamic media;
 
   const PlayerScreen({
     super.key,
-    required this.url,
+    required this.media,
   });
 
   @override
@@ -16,6 +18,7 @@ class PlayerScreen extends StatefulWidget {
 
 class _PlayerScreenState extends State<PlayerScreen> {
   late final WebViewController _controller;
+  late final String _streamingUrl;
   final List<String> _allowedDomains = [
     'vidsrc.to',
     'vidsrc.me',
@@ -38,8 +41,20 @@ class _PlayerScreenState extends State<PlayerScreen> {
   @override
   void initState() {
     super.initState();
+    _streamingUrl = _buildStreamingUrl();
     _setLandscape();
     _initWebView();
+  }
+
+  String _buildStreamingUrl() {
+    if (widget.media is Movie) {
+      final movie = widget.media as Movie;
+      return 'https://vidsrc.to/embed/movie/${movie.id}';
+    } else if (widget.media is TvShow) {
+      final tvShow = widget.media as TvShow;
+      return 'https://vidsrc.to/embed/tv/${tvShow.id}';
+    }
+    throw Exception('Unsupported media type');
   }
 
   void _initWebView() {
@@ -49,25 +64,14 @@ class _PlayerScreenState extends State<PlayerScreen> {
       ..enableZoom(false)
       ..setNavigationDelegate(
         NavigationDelegate(
-          onNavigationRequest: (NavigationRequest request) {
-            // Allow the initial URL
-            if (request.url == widget.url) {
-              return NavigationDecision.navigate;
-            }
-            // Block navigation if not from allowed domains
-            if (!_isAllowedDomain(request.url)) {
-              debugPrint('Blocked navigation to: ${request.url}');
-              return NavigationDecision.prevent;
-            }
-            return NavigationDecision.navigate;
-          },
-          onWebResourceError: (WebResourceError error) {
-            debugPrint('WebView error: ${error.description}');
+          onNavigationRequest: (request) {
+            return _isAllowedDomain(request.url)
+                ? NavigationDecision.navigate
+                : NavigationDecision.prevent;
           },
         ),
       )
-      ..setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36')
-      ..loadRequest(Uri.parse(widget.url));
+      ..loadRequest(Uri.parse(_streamingUrl));
   }
 
   void _setLandscape() {
@@ -75,36 +79,31 @@ class _PlayerScreenState extends State<PlayerScreen> {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
   }
 
   void _resetOrientation() {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
+    SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   }
+
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: true,
-      // ignore: deprecated_member_use
-      onPopInvoked: (didPop) async {
-        if (!didPop) {
-          final canGoBack = await _controller.canGoBack();
-          if (canGoBack) {
-            await _controller.goBack();
-          } else {
-            if (mounted) {
-              Navigator.of(context).pop();
-            }
-          }
-        }
-      },
-      child: Scaffold(
-        body: SafeArea(
-          child: WebViewWidget(controller: _controller),
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            WebViewWidget(controller: _controller),
+            Positioned(
+              top: 16,
+              left: 16,
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+          ],
         ),
       ),
     );

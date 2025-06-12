@@ -4,33 +4,48 @@ import '../../../../core/models/tv_show.dart';
 import '../../../../core/widgets/lazy_load_scroll_view.dart';
 import 'media_card.dart';
 
-class TrendingSection extends StatefulWidget {
+class ContentSection extends StatefulWidget {
   final String title;
   final List<dynamic> mediaList;
   final Function(dynamic) onMediaTap;
   final Future<void> Function()? onLoadMore;
   final bool isLoading;
+  final Widget? trailing;
+  final bool showMetadata;
 
-  const TrendingSection({
+  const ContentSection({
     super.key,
     required this.title,
     required this.mediaList,
     required this.onMediaTap,
     this.onLoadMore,
     this.isLoading = false,
+    this.trailing,
+    this.showMetadata = true,
   });
 
   @override
-  State<TrendingSection> createState() => _TrendingSectionState();
+  State<ContentSection> createState() => _ContentSectionState();
 }
 
-class _TrendingSectionState extends State<TrendingSection> {
+class _ContentSectionState extends State<ContentSection> {
   final ScrollController _scrollController = ScrollController();
 
   @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+
+  String _getMetadata(dynamic media) {
+    if (media is Movie) {
+      final year = media.releaseDate?.split('-')[0] ?? '';
+      return year.isNotEmpty ? '$year • ${media.voteAverage.toStringAsFixed(1)}★' : '';
+    } else if (media is TvShow) {
+      final year = media.firstAirDate?.split('-')[0] ?? '';
+      return year.isNotEmpty ? '$year • ${media.voteAverage.toStringAsFixed(1)}★' : '';
+    }
+    return '';
   }
 
   @override
@@ -45,23 +60,12 @@ class _TrendingSectionState extends State<TrendingSection> {
             children: [
               Text(
                 widget.title,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   color: Colors.white,
                   letterSpacing: 0.2,
                 ),
               ),
-              IconButton(
-                icon: const Icon(
-                  Icons.arrow_forward,
-                  color: Colors.white70,
-                  size: 20,
-                ),
-                onPressed: () {
-                  // TODO: Implement view all functionality
-                },
-              ),
+              if (widget.trailing != null) widget.trailing!,
             ],
           ),
         ),
@@ -69,7 +73,7 @@ class _TrendingSectionState extends State<TrendingSection> {
           builder: (context, constraints) {
             final screenWidth = MediaQuery.of(context).size.width;
             final desiredCardWidth = screenWidth < 600 ? 140.0 : 160.0;
-
+            
             return SizedBox(
               height: desiredCardWidth * 1.7,
               child: LazyLoadScrollView(
@@ -84,21 +88,39 @@ class _TrendingSectionState extends State<TrendingSection> {
                   itemCount: widget.mediaList.length,
                   itemBuilder: (context, index) {
                     final media = widget.mediaList[index];
-                    final title =
-                        media is Movie ? media.title : (media is TvShow ? media.title : '');
-                    final posterPath =
-                        media is Movie ? media.posterPath : (media is TvShow ? media.posterPath : null);
-                    final rating =
-                        media is Movie ? media.voteAverage : (media is TvShow ? media.voteAverage : 0.0);
-
+                    final title = media is Movie ? media.title : (media is TvShow ? media.title : '');
+                    final posterPath = media is Movie
+                        ? media.posterPath
+                        : (media is TvShow ? media.posterPath : null);
+                    final rating = media is Movie
+                        ? media.voteAverage
+                        : (media is TvShow ? media.voteAverage : 0.0);
+                    
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: MediaCard(
-                        posterPath: posterPath,
-                        title: title,
-                        rating: rating,
-                        onTap: () => widget.onMediaTap(media),
-                        width: desiredCardWidth,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: MediaCard(
+                              posterPath: posterPath,
+                              title: title,
+                              rating: rating,
+                              onTap: () => widget.onMediaTap(media),
+                              width: desiredCardWidth,
+                            ),
+                          ),
+                          if (widget.showMetadata)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4, left: 4),
+                              child: Text(
+                                _getMetadata(media),
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     );
                   },

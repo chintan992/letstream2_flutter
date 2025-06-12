@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:async';
 import '../../../core/models/movie.dart';
-import '../../../core/models/tv_show.dart';
 import '../../../core/services/tmdb_service.dart';
 import 'widgets/custom_app_bar.dart';
 import 'widgets/hero_banner.dart';
-import 'widgets/trending_section.dart';
+import 'widgets/hero_banner_shimmer.dart';
+import 'sections/home_sections.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -17,128 +18,145 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   Movie? _featuredMovie;
+  final List<Movie> _trendingMovies = [];
+  bool _isLoading = true;
+  String? _error;
+  int _currentFeatureIndex = 0;
+  Timer? _autoPlayTimer;
+  final ScrollController _scrollController = ScrollController();
+  int _currentPage = 1;
 
   @override
   void initState() {
     super.initState();
-    _loadFeaturedContent();
+    debugPrint('HomeScreen - initState');
+    _loadInitialContent();
   }
 
-  Future<void> _loadFeaturedContent() async {
+  @override
+  void dispose() {
+    _autoPlayTimer?.cancel();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _startAutoPlay() {
+    _autoPlayTimer?.cancel();
+    _autoPlayTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (_trendingMovies.length > 1) {
+        setState(() {
+          _currentFeatureIndex = (_currentFeatureIndex + 1) % _trendingMovies.length;
+          _featuredMovie = _trendingMovies[_currentFeatureIndex];
+        });
+      }
+    });
+  }
+
+  Future<void> _loadInitialContent() async {
     try {
+      setState(() => _isLoading = true);
       final tmdbService = ref.read(tmdbServiceProvider.notifier);
       final trendingMovies = await tmdbService.getTrendingMovies();
+      
       if (trendingMovies.isNotEmpty) {
+        final movies = trendingMovies.map((m) => Movie.fromJson(m)).toList();
         setState(() {
-          _featuredMovie = Movie.fromJson(trendingMovies.first);
+          _trendingMovies.addAll(movies);
+          _featuredMovie = movies.first;
+          _currentPage++;
+          _error = null;
+          _isLoading = false;
+        });
+        _startAutoPlay();
+      } else {
+        setState(() {
+          _error = 'No trending movies found';
+          _isLoading = false;
         });
       }
     } catch (e) {
-      debugPrint('Error loading featured content: $e');
+      debugPrint('HomeScreen - Error loading initial content: $e');
+      setState(() {
+        _error = 'Failed to load content';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadMoreTrending() async {
+    if (_isLoading) return;
+    try {
+      setState(() => _isLoading = true);
+      final tmdbService = ref.read(tmdbServiceProvider.notifier);
+      final movies = await tmdbService.getTrendingMovies(page: _currentPage);
+      
+      if (mounted) {
+        setState(() {
+          _trendingMovies.addAll(movies.map((m) => Movie.fromJson(m)).toList());
+          _currentPage++;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+  dynamic _navigateToDetails(dynamic media) {
+    if (media is Movie) {
+      context.push('/details/${media.id}');
+    }
+  }
+
+  void _handlePlayPress() {
+    if (_featuredMovie != null) {
+      context.push('/player/${_featuredMovie!.id}');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final tmdbService = ref.watch(tmdbServiceProvider.notifier);
-
     return Scaffold(
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.black,
-      appBar: const CustomAppBar(),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(tmdbServiceProvider);
-          await _loadFeaturedContent();
-        },
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            if (_featuredMovie != null)
-              HeroBanner(
-                media: _featuredMovie,
-                onPlayPressed: () {
-                  context.push('/details/movie/${_featuredMovie!.id}');
-                },
-                onDetailsPressed: () {
-                  context.push('/details/movie/${_featuredMovie!.id}');
-                },
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              if (_isLoading && _featuredMovie == null)
+                const HeroBannerShimmer()
+              else if (_featuredMovie != null)
+                HeroBanner(
+                  media: _featuredMovie,
+                  onPlayPressed: _handlePlayPress,
+                  onDetailsPressed: () => _navigateToDetails(_featuredMovie),
+                ),
+              Expanded(
+                child: HomeSections(
+                  scrollController: _scrollController,
+                  isLoading: _isLoading,
+                  trendingMovies: _trendingMovies,
+                  onMovieTap: _navigateToDetails,
+                  onLoadMore: _loadMoreTrending,
+                ),
               ),
-            FutureBuilder<List<Map<String, dynamic>>>(
-              future: tmdbService.getTrendingMovies(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                }
-                final movies = snapshot.data!
-                    .map((json) => Movie.fromJson(json))
-                    .toList();
-
-                return TrendingSection(
-                  title: 'Trending Movies',
-                  mediaList: movies,
-                  onMediaTap: (movie) {
-                    if (movie is Movie) {
-                      context.push('/details/movie/${movie.id}');
-                    }
-                  },
-                );
-              },
+            ],
+          ),
+          const Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: CustomAppBar(),
+          ),
+          if (_error != null)
+            Center(
+              child: Text(
+                _error!,
+                style: const TextStyle(color: Colors.white),
+              ),
             ),
-            FutureBuilder<List<Map<String, dynamic>>>(
-              future: tmdbService.getPopularTvShows(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                }
-                final shows = snapshot.data!
-                    .map((json) => TvShow.fromJson(json))
-                    .toList();
-
-                return TrendingSection(
-                  title: 'Popular TV Shows',
-                  mediaList: shows,
-                  onMediaTap: (show) {
-                    if (show is TvShow) {
-                      context.push('/details/tv/${show.id}');
-                    }
-                  },
-                );
-              },
-            ),
-            FutureBuilder<List<Map<String, dynamic>>>(
-              future: tmdbService.getNowPlayingMovies(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                }
-                final movies = snapshot.data!
-                    .map((json) => Movie.fromJson(json))
-                    .toList();
-
-                return TrendingSection(
-                  title: 'Now Playing in Theaters',
-                  mediaList: movies,
-                  onMediaTap: (movie) {
-                    if (movie is Movie) {
-                      context.push('/details/movie/${movie.id}');
-                    }
-                  },
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
+        ],
       ),
     );
   }
