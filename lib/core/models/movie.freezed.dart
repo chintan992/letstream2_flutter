@@ -22,11 +22,11 @@ Movie _$MovieFromJson(Map<String, dynamic> json) {
 mixin _$Movie {
   int get id => throw _privateConstructorUsedError;
   String get title => throw _privateConstructorUsedError;
-  String get overview => throw _privateConstructorUsedError;
+  String? get overview => throw _privateConstructorUsedError;
   List<int> get genreIds => throw _privateConstructorUsedError;
   String? get posterPath => throw _privateConstructorUsedError;
   String? get backdropPath => throw _privateConstructorUsedError;
-  String get releaseDate => throw _privateConstructorUsedError;
+  String? get releaseDate => throw _privateConstructorUsedError;
   double get voteAverage => throw _privateConstructorUsedError;
   int get voteCount => throw _privateConstructorUsedError;
 
@@ -47,11 +47,11 @@ abstract class $MovieCopyWith<$Res> {
   $Res call(
       {int id,
       String title,
-      String overview,
+      String? overview,
       List<int> genreIds,
       String? posterPath,
       String? backdropPath,
-      String releaseDate,
+      String? releaseDate,
       double voteAverage,
       int voteCount});
 }
@@ -73,11 +73,11 @@ class _$MovieCopyWithImpl<$Res, $Val extends Movie>
   $Res call({
     Object? id = null,
     Object? title = null,
-    Object? overview = null,
+    Object? overview = freezed,
     Object? genreIds = null,
     Object? posterPath = freezed,
     Object? backdropPath = freezed,
-    Object? releaseDate = null,
+    Object? releaseDate = freezed,
     Object? voteAverage = null,
     Object? voteCount = null,
   }) {
@@ -90,10 +90,10 @@ class _$MovieCopyWithImpl<$Res, $Val extends Movie>
           ? _value.title
           : title // ignore: cast_nullable_to_non_nullable
               as String,
-      overview: null == overview
+      overview: freezed == overview
           ? _value.overview
           : overview // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       genreIds: null == genreIds
           ? _value.genreIds
           : genreIds // ignore: cast_nullable_to_non_nullable
@@ -106,10 +106,10 @@ class _$MovieCopyWithImpl<$Res, $Val extends Movie>
           ? _value.backdropPath
           : backdropPath // ignore: cast_nullable_to_non_nullable
               as String?,
-      releaseDate: null == releaseDate
+      releaseDate: freezed == releaseDate
           ? _value.releaseDate
           : releaseDate // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       voteAverage: null == voteAverage
           ? _value.voteAverage
           : voteAverage // ignore: cast_nullable_to_non_nullable
@@ -132,11 +132,11 @@ abstract class _$$MovieImplCopyWith<$Res> implements $MovieCopyWith<$Res> {
   $Res call(
       {int id,
       String title,
-      String overview,
+      String? overview,
       List<int> genreIds,
       String? posterPath,
       String? backdropPath,
-      String releaseDate,
+      String? releaseDate,
       double voteAverage,
       int voteCount});
 }
@@ -156,11 +156,11 @@ class __$$MovieImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? title = null,
-    Object? overview = null,
+    Object? overview = freezed,
     Object? genreIds = null,
     Object? posterPath = freezed,
     Object? backdropPath = freezed,
-    Object? releaseDate = null,
+    Object? releaseDate = freezed,
     Object? voteAverage = null,
     Object? voteCount = null,
   }) {
@@ -173,10 +173,10 @@ class __$$MovieImplCopyWithImpl<$Res>
           ? _value.title
           : title // ignore: cast_nullable_to_non_nullable
               as String,
-      overview: null == overview
+      overview: freezed == overview
           ? _value.overview
           : overview // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       genreIds: null == genreIds
           ? _value._genreIds
           : genreIds // ignore: cast_nullable_to_non_nullable
@@ -189,10 +189,10 @@ class __$$MovieImplCopyWithImpl<$Res>
           ? _value.backdropPath
           : backdropPath // ignore: cast_nullable_to_non_nullable
               as String?,
-      releaseDate: null == releaseDate
+      releaseDate: freezed == releaseDate
           ? _value.releaseDate
           : releaseDate // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       voteAverage: null == voteAverage
           ? _value.voteAverage
           : voteAverage // ignore: cast_nullable_to_non_nullable
@@ -211,11 +211,11 @@ class _$MovieImpl implements _Movie {
   _$MovieImpl(
       {required this.id,
       required this.title,
-      required this.overview,
+      this.overview,
       required final List<int> genreIds,
       this.posterPath,
       this.backdropPath,
-      required this.releaseDate,
+      this.releaseDate,
       required this.voteAverage,
       required this.voteCount})
       : _genreIds = genreIds;
@@ -228,7 +228,7 @@ class _$MovieImpl implements _Movie {
   @override
   final String title;
   @override
-  final String overview;
+  final String? overview;
   final List<int> _genreIds;
   @override
   List<int> get genreIds {
@@ -242,7 +242,7 @@ class _$MovieImpl implements _Movie {
   @override
   final String? backdropPath;
   @override
-  final String releaseDate;
+  final String? releaseDate;
   @override
   final double voteAverage;
   @override
@@ -309,11 +309,11 @@ abstract class _Movie implements Movie {
   factory _Movie(
       {required final int id,
       required final String title,
-      required final String overview,
+      final String? overview,
       required final List<int> genreIds,
       final String? posterPath,
       final String? backdropPath,
-      required final String releaseDate,
+      final String? releaseDate,
       required final double voteAverage,
       required final int voteCount}) = _$MovieImpl;
 
@@ -324,7 +324,7 @@ abstract class _Movie implements Movie {
   @override
   String get title;
   @override
-  String get overview;
+  String? get overview;
   @override
   List<int> get genreIds;
   @override
@@ -332,7 +332,7 @@ abstract class _Movie implements Movie {
   @override
   String? get backdropPath;
   @override
-  String get releaseDate;
+  String? get releaseDate;
   @override
   double get voteAverage;
   @override

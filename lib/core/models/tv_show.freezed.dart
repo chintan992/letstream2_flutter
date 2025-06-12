@@ -22,11 +22,11 @@ TvShow _$TvShowFromJson(Map<String, dynamic> json) {
 mixin _$TvShow {
   int get id => throw _privateConstructorUsedError;
   String get title => throw _privateConstructorUsedError;
-  String get overview => throw _privateConstructorUsedError;
+  String? get overview => throw _privateConstructorUsedError;
   List<int> get genreIds => throw _privateConstructorUsedError;
   String? get posterPath => throw _privateConstructorUsedError;
   String? get backdropPath => throw _privateConstructorUsedError;
-  String get firstAirDate => throw _privateConstructorUsedError;
+  String? get firstAirDate => throw _privateConstructorUsedError;
   double get voteAverage => throw _privateConstructorUsedError;
   int get voteCount => throw _privateConstructorUsedError;
   int? get numberOfSeasons => throw _privateConstructorUsedError;
@@ -48,11 +48,11 @@ abstract class $TvShowCopyWith<$Res> {
   $Res call(
       {int id,
       String title,
-      String overview,
+      String? overview,
       List<int> genreIds,
       String? posterPath,
       String? backdropPath,
-      String firstAirDate,
+      String? firstAirDate,
       double voteAverage,
       int voteCount,
       int? numberOfSeasons});
@@ -75,11 +75,11 @@ class _$TvShowCopyWithImpl<$Res, $Val extends TvShow>
   $Res call({
     Object? id = null,
     Object? title = null,
-    Object? overview = null,
+    Object? overview = freezed,
     Object? genreIds = null,
     Object? posterPath = freezed,
     Object? backdropPath = freezed,
-    Object? firstAirDate = null,
+    Object? firstAirDate = freezed,
     Object? voteAverage = null,
     Object? voteCount = null,
     Object? numberOfSeasons = freezed,
@@ -93,10 +93,10 @@ class _$TvShowCopyWithImpl<$Res, $Val extends TvShow>
           ? _value.title
           : title // ignore: cast_nullable_to_non_nullable
               as String,
-      overview: null == overview
+      overview: freezed == overview
           ? _value.overview
           : overview // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       genreIds: null == genreIds
           ? _value.genreIds
           : genreIds // ignore: cast_nullable_to_non_nullable
@@ -109,10 +109,10 @@ class _$TvShowCopyWithImpl<$Res, $Val extends TvShow>
           ? _value.backdropPath
           : backdropPath // ignore: cast_nullable_to_non_nullable
               as String?,
-      firstAirDate: null == firstAirDate
+      firstAirDate: freezed == firstAirDate
           ? _value.firstAirDate
           : firstAirDate // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       voteAverage: null == voteAverage
           ? _value.voteAverage
           : voteAverage // ignore: cast_nullable_to_non_nullable
@@ -139,11 +139,11 @@ abstract class _$$TvShowImplCopyWith<$Res> implements $TvShowCopyWith<$Res> {
   $Res call(
       {int id,
       String title,
-      String overview,
+      String? overview,
       List<int> genreIds,
       String? posterPath,
       String? backdropPath,
-      String firstAirDate,
+      String? firstAirDate,
       double voteAverage,
       int voteCount,
       int? numberOfSeasons});
@@ -164,11 +164,11 @@ class __$$TvShowImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? title = null,
-    Object? overview = null,
+    Object? overview = freezed,
     Object? genreIds = null,
     Object? posterPath = freezed,
     Object? backdropPath = freezed,
-    Object? firstAirDate = null,
+    Object? firstAirDate = freezed,
     Object? voteAverage = null,
     Object? voteCount = null,
     Object? numberOfSeasons = freezed,
@@ -182,10 +182,10 @@ class __$$TvShowImplCopyWithImpl<$Res>
           ? _value.title
           : title // ignore: cast_nullable_to_non_nullable
               as String,
-      overview: null == overview
+      overview: freezed == overview
           ? _value.overview
           : overview // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       genreIds: null == genreIds
           ? _value._genreIds
           : genreIds // ignore: cast_nullable_to_non_nullable
@@ -198,10 +198,10 @@ class __$$TvShowImplCopyWithImpl<$Res>
           ? _value.backdropPath
           : backdropPath // ignore: cast_nullable_to_non_nullable
               as String?,
-      firstAirDate: null == firstAirDate
+      firstAirDate: freezed == firstAirDate
           ? _value.firstAirDate
           : firstAirDate // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       voteAverage: null == voteAverage
           ? _value.voteAverage
           : voteAverage // ignore: cast_nullable_to_non_nullable
@@ -224,11 +224,11 @@ class _$TvShowImpl implements _TvShow {
   _$TvShowImpl(
       {required this.id,
       required this.title,
-      required this.overview,
+      this.overview,
       required final List<int> genreIds,
       this.posterPath,
       this.backdropPath,
-      required this.firstAirDate,
+      this.firstAirDate,
       required this.voteAverage,
       required this.voteCount,
       this.numberOfSeasons})
@@ -242,7 +242,7 @@ class _$TvShowImpl implements _TvShow {
   @override
   final String title;
   @override
-  final String overview;
+  final String? overview;
   final List<int> _genreIds;
   @override
   List<int> get genreIds {
@@ -256,7 +256,7 @@ class _$TvShowImpl implements _TvShow {
   @override
   final String? backdropPath;
   @override
-  final String firstAirDate;
+  final String? firstAirDate;
   @override
   final double voteAverage;
   @override
@@ -328,11 +328,11 @@ abstract class _TvShow implements TvShow {
   factory _TvShow(
       {required final int id,
       required final String title,
-      required final String overview,
+      final String? overview,
       required final List<int> genreIds,
       final String? posterPath,
       final String? backdropPath,
-      required final String firstAirDate,
+      final String? firstAirDate,
       required final double voteAverage,
       required final int voteCount,
       final int? numberOfSeasons}) = _$TvShowImpl;
@@ -344,7 +344,7 @@ abstract class _TvShow implements TvShow {
   @override
   String get title;
   @override
-  String get overview;
+  String? get overview;
   @override
   List<int> get genreIds;
   @override
@@ -352,7 +352,7 @@ abstract class _TvShow implements TvShow {
   @override
   String? get backdropPath;
   @override
-  String get firstAirDate;
+  String? get firstAirDate;
   @override
   double get voteAverage;
   @override
