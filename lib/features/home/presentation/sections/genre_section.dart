@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/models/movie.dart';
 import '../../../../core/services/tmdb_service.dart';
 import '../widgets/content_section.dart';
@@ -11,12 +12,11 @@ class GenreSection extends ConsumerStatefulWidget {
   ConsumerState<GenreSection> createState() => _GenreSectionState();
 }
 
-class _GenreSectionState extends ConsumerState<GenreSection> {
-  List<Map<String, dynamic>> _genres = [];
-  Map<int, List<Movie>> _moviesByGenre = {};
-  Map<int, bool> _isLoadingGenre = {};
-  Map<int, bool> _hasMoreContent = {};
-  Map<int, int> _currentPages = {};
+class _GenreSectionState extends ConsumerState<GenreSection> {  List<Map<String, dynamic>> _genres = [];
+  final Map<int, List<Movie>> _moviesByGenre = {};
+  final Map<int, bool> _isLoadingGenre = {};
+  final Map<int, bool> _hasMoreContent = {};
+  final Map<int, int> _currentPages = {};
   bool _isLoadingGenres = true;
   String? _error;
 
@@ -81,9 +81,6 @@ class _GenreSectionState extends ConsumerState<GenreSection> {
     }
   }
 
-  void _navigateToGenreViewAll(int genreId, String genreName) {
-    // TODO: Implement genre view all navigation
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,20 +100,24 @@ class _GenreSectionState extends ConsumerState<GenreSection> {
         final genreId = genre['id'] as int;
         final genreName = genre['name'] as String;
         final movies = _moviesByGenre[genreId] ?? [];
-        final isLoading = _isLoadingGenre[genreId] ?? false;
-
-        return ContentSection(
+        final isLoading = _isLoadingGenre[genreId] ?? false;        return ContentSection(
           title: genreName,
           mediaList: movies,
           isLoading: isLoading,
           onLoadMore: () => _loadMoviesForGenre(genreId),
-          onMediaTap: (movie) => Navigator.pushNamed(
-            context, 
-            '/details/${(movie as Movie).id}'
-          ),
+          onMediaTap: (movie) {
+            final context = this.context;
+            if (!mounted) return;
+            context.go('/movies/${(movie as Movie).id}');
+          },
           trailing: TextButton(
-            onPressed: () => _navigateToGenreViewAll(genreId, genreName),
-            child: const Text('View All'),
+            onPressed: () => context.go(
+              '/movies/genre?title=$genreName&genreId=$genreId',
+            ),
+            child: const Text(
+              'View All',
+              style: TextStyle(color: Colors.white70),
+            ),
           ),
         );
       }).toList(),

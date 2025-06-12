@@ -15,38 +15,55 @@ class TmdbService extends _$TmdbService {
   Future<void> build() async {
     _apiKey = dotenv.env['TMDB_API_KEY']!;
   }
-
   Future<Map<String, dynamic>> _get(String endpoint, {Map<String, String>? params}) async {
-    final queryParams = {
-      'api_key': _apiKey,
-      ...?params,
-    };
+    try {
+      final queryParams = {
+        'api_key': _apiKey,
+        ...?params,
+      };
 
-    final uri = Uri.parse('$_baseUrl$endpoint').replace(queryParameters: queryParams);
-    final response = await http.get(uri);
-
-    if (response.statusCode == 200) {
-      return json.decode(response.body);
-    } else {
-      throw Exception('Failed to load data from TMDB API');
+      final uri = Uri.parse('$_baseUrl$endpoint').replace(queryParameters: queryParams);
+      final response = await http.get(uri);
+        if (response.statusCode == 200) {
+        final decodedData = json.decode(response.body) as Map<String, dynamic>;
+        return decodedData;
+      } else {
+        throw Exception('TMDB API error: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      debugPrint('TMDB API request failed: $e');
+      rethrow;
     }
   }
-
   Future<List<Map<String, dynamic>>> searchMovies(String query) async {
     final data = await _get('/search/movie', params: {'query': query});
+    if (!data.containsKey('results')) {
+      throw Exception('Missing results key in search movies response');
+    }
     return List<Map<String, dynamic>>.from(data['results']);
   }
 
   Future<List<Map<String, dynamic>>> searchTvShows(String query) async {
     final data = await _get('/search/tv', params: {'query': query});
+    if (!data.containsKey('results')) {
+      throw Exception('Missing results key in search TV shows response');
+    }
     return List<Map<String, dynamic>>.from(data['results']);
-  }
-
-  Future<List<Map<String, dynamic>>> getTrendingMovies({int page = 1}) async {
+  }  Future<List<Map<String, dynamic>>> getTrendingMovies({int page = 1}) async {
     try {
       final data = await _get('/trending/movie/week', params: {'page': page.toString()});
-      return List<Map<String, dynamic>>.from(data['results']);
-    } catch (e) {
+      if (!data.containsKey('results')) {
+        throw Exception('Missing results key in trending movies response');
+      }
+      final results = data['results'];
+      if (results == null) {
+        debugPrint('getTrendingMovies: No results found in API response');
+        return [];
+      }
+      return List<Map<String, dynamic>>.from(results);
+    } catch (e, stackTrace) {
+      debugPrint('getTrendingMovies failed: $e');
+      debugPrint('Stack trace: $stackTrace');
       rethrow;
     }
   }
@@ -98,17 +115,18 @@ class TmdbService extends _$TmdbService {
     final data = await _get('/tv/$tvId/season/$seasonNumber');
     return List<Map<String, dynamic>>.from(data['episodes']);
   }
-
   Future<List<Map<String, dynamic>>> getMovieGenres() async {
     try {
       final data = await _get('/genre/movie/list');
+      if (!data.containsKey('genres')) {
+        throw Exception('Missing genres key in response');
+      }
       return List<Map<String, dynamic>>.from(data['genres']);
     } catch (e) {
       debugPrint('Error fetching genres: $e');
       rethrow;
     }
   }
-
   Future<List<Map<String, dynamic>>> getMoviesByGenre(int genreId, {int page = 1}) async {
     try {
       final data = await _get('/discover/movie', params: {
@@ -116,6 +134,9 @@ class TmdbService extends _$TmdbService {
         'page': page.toString(),
         'sort_by': 'popularity.desc'
       });
+      if (!data.containsKey('results')) {
+        throw Exception('Missing results key in movies by genre response');
+      }
       return List<Map<String, dynamic>>.from(data['results']);
     } catch (e) {
       debugPrint('Error fetching movies by genre: $e');

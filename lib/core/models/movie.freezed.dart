@@ -206,9 +206,10 @@ class __$$MovieImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
-class _$MovieImpl implements _Movie {
-  _$MovieImpl(
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class _$MovieImpl extends _Movie {
+  const _$MovieImpl(
       {required this.id,
       required this.title,
       this.overview,
@@ -218,7 +219,8 @@ class _$MovieImpl implements _Movie {
       this.releaseDate,
       required this.voteAverage,
       required this.voteCount})
-      : _genreIds = genreIds;
+      : _genreIds = genreIds,
+        super._();
 
   factory _$MovieImpl.fromJson(Map<String, dynamic> json) =>
       _$$MovieImplFromJson(json);
@@ -305,8 +307,8 @@ class _$MovieImpl implements _Movie {
   }
 }
 
-abstract class _Movie implements Movie {
-  factory _Movie(
+abstract class _Movie extends Movie {
+  const factory _Movie(
       {required final int id,
       required final String title,
       final String? overview,
@@ -316,6 +318,7 @@ abstract class _Movie implements Movie {
       final String? releaseDate,
       required final double voteAverage,
       required final int voteCount}) = _$MovieImpl;
+  const _Movie._() : super._();
 
   factory _Movie.fromJson(Map<String, dynamic> json) = _$MovieImpl.fromJson;
 

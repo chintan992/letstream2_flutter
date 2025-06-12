@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/models/movie.dart';
 import '../../../../core/services/tmdb_service.dart';
 import '../widgets/content_section.dart';
@@ -68,13 +69,9 @@ class _TopRatedSectionState extends ConsumerState<TopRatedSection> {
     }
   }
 
-  void _navigateToViewAll() {
-    // TODO: Implement view all navigation
-  }
 
   @override
-  Widget build(BuildContext context) {
-    if (_error != null) {
+  Widget build(BuildContext context) {    if (_error != null) {
       return Padding(
         padding: const EdgeInsets.all(16.0),
         child: Text(_error!, style: const TextStyle(color: Colors.red)),
@@ -86,13 +83,19 @@ class _TopRatedSectionState extends ConsumerState<TopRatedSection> {
       mediaList: _movies,
       isLoading: _isLoading,
       onLoadMore: _loadMore,
-      onMediaTap: (movie) => Navigator.pushNamed(
-        context, 
-        '/details/${(movie as Movie).id}'
-      ),
+      onMediaTap: (movie) {
+        final context = this.context;
+        if (!mounted) return;
+        context.go('/movies/${(movie as Movie).id}');
+      },
       trailing: TextButton(
-        onPressed: _navigateToViewAll,
-        child: const Text('View All'),
+        onPressed: () => context.go(
+          '/movies/top_rated?title=Top Rated Movies',
+        ),
+        child: const Text(
+          'View All',
+          style: TextStyle(color: Colors.white70),
+        ),
       ),
     );
   }

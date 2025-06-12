@@ -51,15 +51,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
     });
   }
-
   Future<void> _loadInitialContent() async {
     try {
       setState(() => _isLoading = true);
       final tmdbService = ref.read(tmdbServiceProvider.notifier);
-      final trendingMovies = await tmdbService.getTrendingMovies();
-      
-      if (trendingMovies.isNotEmpty) {
-        final movies = trendingMovies.map((m) => Movie.fromJson(m)).toList();
+      final trendingData = await tmdbService.getTrendingMovies();
+        debugPrint('HomeScreen - Got trending data, length: ${trendingData.length}');
+      if (trendingData.isNotEmpty) {
+        debugPrint('HomeScreen - Processing ${trendingData.length} trending movies');
+        final movies = trendingData.map((m) => Movie.fromJson(m)).toList();
         setState(() {
           _trendingMovies.addAll(movies);
           _featuredMovie = movies.first;
@@ -67,17 +67,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _error = null;
           _isLoading = false;
         });
-        _startAutoPlay();
-      } else {
+        _startAutoPlay();      } else {
+        debugPrint('HomeScreen - No trending movies found in response');
         setState(() {
-          _error = 'No trending movies found';
+          _error = 'No trending movies available';
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('HomeScreen - Error loading initial content: $e');
+      debugPrint('Stack trace: $stackTrace');
       setState(() {
-        _error = 'Failed to load content';
+        _error = e.toString();
         _isLoading = false;
       });
     }
