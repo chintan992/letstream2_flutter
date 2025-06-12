@@ -89,13 +89,16 @@ class _PlayerScreenState extends State<PlayerScreen> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: true,
-      onPopInvoked: (bool didPop) async {
+      // ignore: deprecated_member_use
+      onPopInvoked: (didPop) async {
         if (!didPop) {
           final canGoBack = await _controller.canGoBack();
           if (canGoBack) {
             await _controller.goBack();
-          } else if (mounted) {
-            Navigator.of(context).pop();
+          } else {
+            if (mounted) {
+              Navigator.of(context).pop();
+            }
           }
         }
       },

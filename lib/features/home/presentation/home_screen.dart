@@ -4,31 +4,66 @@ import 'package:go_router/go_router.dart';
 import '../../../core/models/movie.dart';
 import '../../../core/models/tv_show.dart';
 import '../../../core/services/tmdb_service.dart';
-import 'widgets/media_list_view.dart';
+import 'widgets/custom_app_bar.dart';
+import 'widgets/hero_banner.dart';
+import 'widgets/trending_section.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  Movie? _featuredMovie;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFeaturedContent();
+  }
+
+  Future<void> _loadFeaturedContent() async {
+    try {
+      final tmdbService = ref.read(tmdbServiceProvider.notifier);
+      final trendingMovies = await tmdbService.getTrendingMovies();
+      if (trendingMovies.isNotEmpty) {
+        setState(() {
+          _featuredMovie = Movie.fromJson(trendingMovies.first);
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading featured content: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final tmdbService = ref.watch(tmdbServiceProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('LetsStream'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () => context.push('/search'),
-          ),
-        ],
-      ),
+      extendBodyBehindAppBar: true,
+      backgroundColor: Colors.black,
+      appBar: const CustomAppBar(),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(tmdbServiceProvider);
+          await _loadFeaturedContent();
         },
         child: ListView(
+          padding: EdgeInsets.zero,
           children: [
+            if (_featuredMovie != null)
+              HeroBanner(
+                media: _featuredMovie,
+                onPlayPressed: () {
+                  context.push('/details/movie/${_featuredMovie!.id}');
+                },
+                onDetailsPressed: () {
+                  context.push('/details/movie/${_featuredMovie!.id}');
+                },
+              ),
             FutureBuilder<List<Map<String, dynamic>>>(
               future: tmdbService.getTrendingMovies(),
               builder: (context, snapshot) {
@@ -42,12 +77,12 @@ class HomeScreen extends ConsumerWidget {
                     .map((json) => Movie.fromJson(json))
                     .toList();
 
-                return MediaListView(
+                return TrendingSection(
                   title: 'Trending Movies',
-                  items: movies,
-                  onTap: (item) {
-                    if (item is Movie) {
-                      context.push('/details/movie/${item.id}');
+                  mediaList: movies,
+                  onMediaTap: (movie) {
+                    if (movie is Movie) {
+                      context.push('/details/movie/${movie.id}');
                     }
                   },
                 );
@@ -66,12 +101,12 @@ class HomeScreen extends ConsumerWidget {
                     .map((json) => TvShow.fromJson(json))
                     .toList();
 
-                return MediaListView(
+                return TrendingSection(
                   title: 'Popular TV Shows',
-                  items: shows,
-                  onTap: (item) {
-                    if (item is TvShow) {
-                      context.push('/details/tv/${item.id}');
+                  mediaList: shows,
+                  onMediaTap: (show) {
+                    if (show is TvShow) {
+                      context.push('/details/tv/${show.id}');
                     }
                   },
                 );
@@ -90,17 +125,18 @@ class HomeScreen extends ConsumerWidget {
                     .map((json) => Movie.fromJson(json))
                     .toList();
 
-                return MediaListView(
+                return TrendingSection(
                   title: 'Now Playing in Theaters',
-                  items: movies,
-                  onTap: (item) {
-                    if (item is Movie) {
-                      context.push('/details/movie/${item.id}');
+                  mediaList: movies,
+                  onMediaTap: (movie) {
+                    if (movie is Movie) {
+                      context.push('/details/movie/${movie.id}');
                     }
                   },
                 );
               },
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
