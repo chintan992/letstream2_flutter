@@ -3,6 +3,7 @@ import '../../features/home/presentation/home_screen.dart';
 import '../../features/player/presentation/player_screen.dart';
 import '../../features/movie_list/presentation/movie_list_screen.dart';
 import '../../features/details/presentation/media_details_screen.dart';
+import '../../features/search/presentation/search_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -51,6 +52,10 @@ final appRouter = GoRouter(
           genreId: genreId,
         );
       },
+    ),
+    GoRoute(
+      path: '/search',
+      builder: (context, state) => const SearchScreen(),
     ),
   ],
 );

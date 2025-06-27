@@ -25,7 +25,6 @@ class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
 class _CustomAppBarState extends State<CustomAppBar> with SingleTickerProviderStateMixin {
   late AnimationController _menuController;
   double _scrollOffset = 0;
-  bool _isSearchExpanded = false;
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -53,14 +52,6 @@ class _CustomAppBarState extends State<CustomAppBar> with SingleTickerProviderSt
     });
   }
 
-  void _toggleSearch() {
-    setState(() {
-      _isSearchExpanded = !_isSearchExpanded;
-      if (!_isSearchExpanded) {
-        _searchController.clear();
-      }
-    });
-  }
 
   void _showMenu(BuildContext context) {
     _menuController.forward();
@@ -179,33 +170,9 @@ class _CustomAppBarState extends State<CustomAppBar> with SingleTickerProviderSt
             ),
             actions: [
               // Search
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: _isSearchExpanded ? 200 : 48,
-                child: _isSearchExpanded
-                    ? TextField(
-                        controller: _searchController,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          hintText: 'Search...',
-                          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.close, color: Colors.white),
-                            onPressed: _toggleSearch,
-                          ),
-                        ),
-                        onSubmitted: (value) {
-                          if (value.isNotEmpty) {
-                            context.push('/search', extra: value);
-                          }
-                        },
-                      )
-                    : IconButton(
-                        icon: const Icon(Icons.search),
-                        onPressed: _toggleSearch,
-                      ),
+              IconButton(
+                icon: const Icon(Icons.search),
+                onPressed: () => context.push('/search'),
               ),
               // Menu
               IconButton(

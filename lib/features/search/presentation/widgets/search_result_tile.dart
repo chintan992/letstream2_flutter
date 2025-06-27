@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/models/movie.dart';
+import '../../../../core/models/tv_show.dart';
 
 class SearchResultTile extends StatelessWidget {
   final dynamic media;
@@ -14,11 +15,21 @@ class SearchResultTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = media is Movie ? media.title : media.title;
-    final posterPath = media is Movie ? media.posterPath : media.posterPath;
-    final year = media is Movie
-        ? media.releaseDate.substring(0, 4)
-        : media.firstAirDate.substring(0, 4);
+    final title = media is Movie ? media.title : (media is TvShow ? media.title : 'Unknown Title');
+    final posterPath = media is Movie ? media.posterPath : (media is TvShow ? media.posterPath : null);
+    
+    // Safely extract year from date strings
+    String? year;
+    if (media is Movie) {
+      year = media.releaseDate != null && media.releaseDate!.length >= 4 
+          ? media.releaseDate!.substring(0, 4) 
+          : 'N/A';
+    } else {
+      year = media.firstAirDate != null && media.firstAirDate!.length >= 4 
+          ? media.firstAirDate!.substring(0, 4) 
+          : 'N/A';
+    }
+    
     final type = media is Movie ? 'Movie' : 'TV Show';
 
     return ListTile(
