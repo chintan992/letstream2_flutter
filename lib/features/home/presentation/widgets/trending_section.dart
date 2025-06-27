@@ -99,6 +99,7 @@ class _TrendingSectionState extends State<TrendingSection> {
                         rating: rating,
                         onTap: () => widget.onMediaTap(media),
                         width: desiredCardWidth,
+                        heroTag: "trending-${media.id}-$index",
                       ),
                     );
                   },

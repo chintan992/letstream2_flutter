@@ -84,7 +84,7 @@ class _HeroBannerState extends State<HeroBanner> with SingleTickerProviderStateM
                     imageUrl: imageUrl,
                     fit: BoxFit.cover,
                     enableShimmer: false,
-                    heroTag: 'hero_banner_$imageUrl',
+                    heroTag: 'hero_banner_${widget.media?.id ?? 'default'}',
                   ),
                   // Dark gradient overlay for better text visibility
                   Container(

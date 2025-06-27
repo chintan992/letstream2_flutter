@@ -7,7 +7,7 @@ part of 'video_sources_service.dart';
 // **************************************************************************
 
 String _$videoSourcesServiceHash() =>
-    r'b0753d960ad7ddbc3b8966d17d7172cee777a0f5';
+    r'145d0efe5227c46d24279c3d7d97b3eca361131d';
 
 /// See also [VideoSourcesService].
 @ProviderFor(VideoSourcesService)

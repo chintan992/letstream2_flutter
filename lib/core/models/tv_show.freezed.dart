@@ -225,12 +225,12 @@ class _$TvShowImpl implements _TvShow {
       {required this.id,
       required this.title,
       this.overview,
-      required final List<int> genreIds,
+      final List<int> genreIds = const [],
       this.posterPath,
       this.backdropPath,
       this.firstAirDate,
-      required this.voteAverage,
-      required this.voteCount,
+      this.voteAverage = 0.0,
+      this.voteCount = 0,
       this.numberOfSeasons})
       : _genreIds = genreIds;
 
@@ -245,6 +245,7 @@ class _$TvShowImpl implements _TvShow {
   final String? overview;
   final List<int> _genreIds;
   @override
+  @JsonKey()
   List<int> get genreIds {
     if (_genreIds is EqualUnmodifiableListView) return _genreIds;
     // ignore: implicit_dynamic_type
@@ -258,8 +259,10 @@ class _$TvShowImpl implements _TvShow {
   @override
   final String? firstAirDate;
   @override
+  @JsonKey()
   final double voteAverage;
   @override
+  @JsonKey()
   final int voteCount;
   @override
   final int? numberOfSeasons;
@@ -329,12 +332,12 @@ abstract class _TvShow implements TvShow {
       {required final int id,
       required final String title,
       final String? overview,
-      required final List<int> genreIds,
+      final List<int> genreIds,
       final String? posterPath,
       final String? backdropPath,
       final String? firstAirDate,
-      required final double voteAverage,
-      required final int voteCount,
+      final double voteAverage,
+      final int voteCount,
       final int? numberOfSeasons}) = _$TvShowImpl;
 
   factory _TvShow.fromJson(Map<String, dynamic> json) = _$TvShowImpl.fromJson;

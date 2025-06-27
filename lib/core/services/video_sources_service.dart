@@ -12,6 +12,10 @@ class VideoSourcesService extends _$VideoSourcesService {
 
   @override
   Future<List<VideoSource>> build() async {
+    return await fetchVideoSources();
+  }
+
+  Future<List<VideoSource>> fetchVideoSources() async {
     final response = await http.get(Uri.parse(_sourcesUrl));
 
     if (response.statusCode == 200) {

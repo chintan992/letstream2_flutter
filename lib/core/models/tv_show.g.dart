@@ -10,14 +10,15 @@ _$TvShowImpl _$$TvShowImplFromJson(Map<String, dynamic> json) => _$TvShowImpl(
       id: (json['id'] as num).toInt(),
       title: json['title'] as String,
       overview: json['overview'] as String?,
-      genreIds: (json['genreIds'] as List<dynamic>)
-          .map((e) => (e as num).toInt())
-          .toList(),
+      genreIds: (json['genreIds'] as List<dynamic>?)
+              ?.map((e) => (e as num).toInt())
+              .toList() ??
+          const [],
       posterPath: json['posterPath'] as String?,
       backdropPath: json['backdropPath'] as String?,
       firstAirDate: json['firstAirDate'] as String?,
-      voteAverage: (json['voteAverage'] as num).toDouble(),
-      voteCount: (json['voteCount'] as num).toInt(),
+      voteAverage: (json['voteAverage'] as num?)?.toDouble() ?? 0.0,
+      voteCount: (json['voteCount'] as num?)?.toInt() ?? 0,
       numberOfSeasons: (json['numberOfSeasons'] as num?)?.toInt(),
     );
 

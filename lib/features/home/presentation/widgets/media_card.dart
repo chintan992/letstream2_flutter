@@ -7,6 +7,7 @@ class MediaCard extends StatefulWidget {
   final VoidCallback onTap;
   final double rating;
   final double width;
+  final String? heroTag;
 
   const MediaCard({
     super.key,
@@ -15,6 +16,7 @@ class MediaCard extends StatefulWidget {
     required this.onTap,
     this.rating = 0.0,
     this.width = 130,
+    this.heroTag,
   });
 
   @override
@@ -78,7 +80,7 @@ class _MediaCardState extends State<MediaCard> with SingleTickerProviderStateMix
           builder: (context, child) {
             return Transform.scale(
               scale: _scaleAnimation.value,
-              child: Container(
+              child: SizedBox(
                 width: widget.width,
                 height: height,
                 child: Column(
@@ -106,7 +108,7 @@ class _MediaCardState extends State<MediaCard> with SingleTickerProviderStateMix
                                 height: height,
                                 fit: BoxFit.cover,
                                 borderRadius: BorderRadius.circular(12),
-                                heroTag: imageUrl,
+                                heroTag: widget.heroTag,
                               ),
                               if (widget.rating > 0)
                                 Positioned(

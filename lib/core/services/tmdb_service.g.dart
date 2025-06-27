@@ -6,7 +6,7 @@ part of 'tmdb_service.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$tmdbServiceHash() => r'021b246cebe7469dea5346eacb55d85c93e0bc37';
+String _$tmdbServiceHash() => r'cecc8283e7351975163804970d43d71924670d79';
 
 /// See also [TmdbService].
 @ProviderFor(TmdbService)

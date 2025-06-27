@@ -206,19 +206,18 @@ class __$$MovieImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable()
 class _$MovieImpl extends _Movie {
   const _$MovieImpl(
       {required this.id,
       required this.title,
       this.overview,
-      required final List<int> genreIds,
+      final List<int> genreIds = const [],
       this.posterPath,
       this.backdropPath,
       this.releaseDate,
-      required this.voteAverage,
-      required this.voteCount})
+      this.voteAverage = 0.0,
+      this.voteCount = 0})
       : _genreIds = genreIds,
         super._();
 
@@ -233,6 +232,7 @@ class _$MovieImpl extends _Movie {
   final String? overview;
   final List<int> _genreIds;
   @override
+  @JsonKey()
   List<int> get genreIds {
     if (_genreIds is EqualUnmodifiableListView) return _genreIds;
     // ignore: implicit_dynamic_type
@@ -246,8 +246,10 @@ class _$MovieImpl extends _Movie {
   @override
   final String? releaseDate;
   @override
+  @JsonKey()
   final double voteAverage;
   @override
+  @JsonKey()
   final int voteCount;
 
   @override
@@ -312,12 +314,12 @@ abstract class _Movie extends Movie {
       {required final int id,
       required final String title,
       final String? overview,
-      required final List<int> genreIds,
+      final List<int> genreIds,
       final String? posterPath,
       final String? backdropPath,
       final String? releaseDate,
-      required final double voteAverage,
-      required final int voteCount}) = _$MovieImpl;
+      final double voteAverage,
+      final int voteCount}) = _$MovieImpl;
   const _Movie._() : super._();
 
   factory _Movie.fromJson(Map<String, dynamic> json) = _$MovieImpl.fromJson;

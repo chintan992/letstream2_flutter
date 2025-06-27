@@ -107,16 +107,16 @@ class _MediaDetailsScreenState extends ConsumerState<MediaDetailsScreen> {
           return ListTile(
             title: Text(source.name),
             onTap: () {
-              final url = ref
-                  .read(videoSourcesServiceProvider.notifier)
-                  .generateStreamingUrl(
-                    source,
-                    id: widget.mediaId,
-                    season: _selectedSeason,
-                    episode: _selectedEpisode,
-                    isTvShow: widget.mediaType == 'tv',
-                  );
-              context.push('/player?url=$url');
+              Navigator.pop(context);
+              final queryParams = {
+                'type': widget.mediaType,
+                if (_selectedSeason != null) 'season': _selectedSeason!,
+                if (_selectedEpisode != null) 'episode': _selectedEpisode!,
+              };
+              final queryString = queryParams.entries
+                  .map((e) => '${e.key}=${e.value}')
+                  .join('&');
+              context.push('/player/${widget.mediaId}?$queryString');
             },
           );
         },

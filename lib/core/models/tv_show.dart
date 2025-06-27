@@ -9,12 +9,12 @@ class TvShow with _$TvShow {
     required int id,
     required String title,
     String? overview,
-    required List<int> genreIds,
+    @Default([]) List<int> genreIds,
     String? posterPath,
     String? backdropPath,
     String? firstAirDate,
-    required double voteAverage,
-    required int voteCount,
+    @Default(0.0) double voteAverage,
+    @Default(0) int voteCount,
     int? numberOfSeasons,
   }) = _TvShow;
 

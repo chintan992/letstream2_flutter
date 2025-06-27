@@ -28,7 +28,6 @@ class AppTheme {
       colorScheme: base.colorScheme.copyWith(
         primary: _primaryColor,
         secondary: _secondaryColor,
-        background: background,
         surface: surfaceDark1,
       ),
       scaffoldBackgroundColor: background,
