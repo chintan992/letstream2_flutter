@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import '../../../core/models/movie.dart';
 import '../../../core/models/tv_show.dart';
 import '../../../core/services/tmdb_service.dart';
-import '../../../core/services/video_sources_service.dart';
-import 'widgets/media_backdrop.dart';
-import 'widgets/media_info.dart';
-import 'widgets/episode_selector.dart';
+import 'widgets/about_tab.dart';
+import 'widgets/action_buttons.dart';
+import 'widgets/cast_tab.dart';
+import 'widgets/details_tab_bar.dart';
+import 'widgets/media_details_sliver_app_bar.dart';
+import 'widgets/media_metadata.dart';
+import 'widgets/reviews_tab.dart';
 
 class MediaDetailsScreen extends ConsumerStatefulWidget {
   final String mediaType;
@@ -23,22 +27,21 @@ class MediaDetailsScreen extends ConsumerStatefulWidget {
   ConsumerState<MediaDetailsScreen> createState() => _MediaDetailsScreenState();
 }
 
-class _MediaDetailsScreenState extends ConsumerState<MediaDetailsScreen> {
-  String? _selectedSeason;
-  String? _selectedEpisode;
+class _MediaDetailsScreenState extends ConsumerState<MediaDetailsScreen>
+    with SingleTickerProviderStateMixin {
   dynamic _mediaDetails;
-  List<Map<String, dynamic>>? _episodes;
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 4, vsync: this);
     _loadMediaDetails();
   }
 
   Future<void> _loadMediaDetails() async {
     try {
-      final tmdbService = ref.read(tmdbServiceProvider.notifier);
-      
+      final tmdbService = ref.read(tmdbServiceProvider);
       final details = widget.mediaType == 'movie'
           ? await tmdbService.getMovieDetails(widget.mediaId)
           : await tmdbService.getTvShowDetails(widget.mediaId);
@@ -48,134 +51,106 @@ class _MediaDetailsScreenState extends ConsumerState<MediaDetailsScreen> {
             ? Movie.fromJson(details)
             : TvShow.fromJson(details);
       });
-
-      if (widget.mediaType == 'tv' && details['seasons'] != null) {
-        _loadEpisodes(1); // Load first season by default
-      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text('Error loading details: $e')),
         );
       }
     }
   }
 
-  Future<void> _loadEpisodes(int seasonNumber) async {
-    try {
-      final tmdbService = ref.read(tmdbServiceProvider.notifier);
-      final episodes = await tmdbService.getTvSeasonDetails(
-        widget.mediaId,
-        seasonNumber,
-      );
-
-      setState(() {
-        _episodes = episodes;
-        _selectedSeason = seasonNumber.toString();
-        _selectedEpisode = null;
-      });
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading episodes: $e')),
-        );
-      }
-    }
+  void _playMedia() {
+    context.push('/player/${widget.mediaId}?type=${widget.mediaType}');
   }
 
-  void _showSourceSelection() async {
-    if (widget.mediaType == 'tv' &&
-        (_selectedSeason == null || _selectedEpisode == null)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a season and episode first'),
-        ),
-      );
-      return;
-    }
-
-    final sources = await ref.read(videoSourcesServiceProvider.future);
-    if (!mounted) return;
-
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => ListView.builder(
-        shrinkWrap: true,
-        itemCount: sources.length,
-        itemBuilder: (context, index) {
-          final source = sources[index];
-          return ListTile(
-            title: Text(source.name),
-            onTap: () {
-              Navigator.pop(context);
-              final queryParams = {
-                'type': widget.mediaType,
-                if (_selectedSeason != null) 'season': _selectedSeason!,
-                if (_selectedEpisode != null) 'episode': _selectedEpisode!,
-              };
-              final queryString = queryParams.entries
-                  .map((e) => '${e.key}=${e.value}')
-                  .join('&');
-              context.push('/player/${widget.mediaId}?$queryString');
-            },
-          );
-        },
-      ),
-    );
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     if (_mediaDetails == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          MediaBackdrop(media: _mediaDetails),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  MediaInfo(media: _mediaDetails),
-                  if (widget.mediaType == 'tv') ...[
-                    const SizedBox(height: 24),
-                    EpisodeSelector(
-                      seasons: List.generate(
-                        (_mediaDetails as TvShow).numberOfSeasons ?? 0,
-                        (index) => (index + 1).toString(),
-                      ),
-                      episodes: _episodes
-                          ?.map((e) => e['episode_number'].toString())
-                          .toList(),
-                      selectedSeason: _selectedSeason,
-                      selectedEpisode: _selectedEpisode,
-                      onSeasonChanged: (season) {
-                        _loadEpisodes(int.parse(season));
-                      },
-                      onEpisodeChanged: (episode) {
-                        setState(() {
-                          _selectedEpisode = episode;
-                        });
-                      },
-                    ),
-                  ],
-                ],
-              ),
+      backgroundColor: Colors.black,
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            MediaDetailsSliverAppBar(
+              heroTag: 'details-backdrop-${_mediaDetails.id}',
+              backdropPath: _mediaDetails.backdropPath,
+              title: _mediaDetails.title,
+              tagline: _mediaDetails.tagline,
             ),
+          ];
+        },
+        body: _buildContent(),
+      ),
+    );
+  }
+
+  Widget _buildContent() {
+    final isMovie = widget.mediaType == 'movie';
+    final releaseDate =
+        isMovie ? _mediaDetails.releaseDate : _mediaDetails.firstAirDate;
+    final year = releaseDate != null && releaseDate.isNotEmpty
+        ? DateTime.parse(releaseDate).year.toString()
+        : null;
+    final runtime = isMovie ? _mediaDetails.runtime : null;
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              MediaMetadata(
+                rating: _mediaDetails.adult ? 'R' : 'PG-13', // Example
+                releaseYear: year,
+                runtime: runtime != null && runtime > 0 ? '$runtime min' : null,
+              ),
+              const SizedBox(height: 16),
+              ActionButtons(onPlay: _playMedia),
+            ],
           ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showSourceSelection,
-        icon: const Icon(Icons.play_arrow),
-        label: const Text('Select Source & Play'),
-      ),
+        ),
+        DetailsTabBar(
+          tabController: _tabController,
+          tabs: const ['About', 'Cast', 'Reviews', 'Downloads'],
+        ),
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              AboutTab(
+                overview: _mediaDetails.overview,
+                status: _mediaDetails.status,
+                budget: isMovie && _mediaDetails.budget > 0
+                    ? NumberFormat.currency(locale: 'en_US', symbol: '\$').format(_mediaDetails.budget)
+                    : 'N/A',
+                revenue: isMovie && _mediaDetails.revenue > 0
+                    ? NumberFormat.currency(locale: 'en_US', symbol: '\$').format(_mediaDetails.revenue)
+                    : 'N/A',
+                productionCompanies: _mediaDetails.productionCompanies
+                    ?.map<String>((c) => c['name'] as String)
+                    .toList(),
+              ),
+              CastTab(mediaType: widget.mediaType, mediaId: widget.mediaId),
+              ReviewsTab(mediaType: widget.mediaType, mediaId: widget.mediaId),
+              const Center(child: Text('Downloads Tab', style: TextStyle(color: Colors.white))),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

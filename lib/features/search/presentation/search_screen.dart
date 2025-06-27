@@ -44,7 +44,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     if (query.isEmpty) return;
 
     try {
-      final tmdbService = ref.read(tmdbServiceProvider.notifier);
+      final tmdbService = ref.read(tmdbServiceProvider);
       final movies = await tmdbService.searchMovies(query);
       final tvShows = await tmdbService.searchTvShows(query);
 

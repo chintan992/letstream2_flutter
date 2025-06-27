@@ -27,7 +27,7 @@ class _NewReleasesSectionState extends ConsumerState<NewReleasesSection> {
 
   Future<void> _loadInitialContent() async {
     try {
-      final tmdbService = ref.read(tmdbServiceProvider.notifier);
+      final tmdbService = ref.read(tmdbServiceProvider);
       final movies = await tmdbService.getNewReleases(page: _currentPage);
       setState(() {
         _movies = movies.map((m) => Movie.fromJson(m)).toList();
@@ -48,7 +48,7 @@ class _NewReleasesSectionState extends ConsumerState<NewReleasesSection> {
     
     try {
       setState(() => _isLoading = true);
-      final tmdbService = ref.read(tmdbServiceProvider.notifier);
+      final tmdbService = ref.read(tmdbServiceProvider);
       final movies = await tmdbService.getNewReleases(page: _currentPage);
       
       if (mounted) {

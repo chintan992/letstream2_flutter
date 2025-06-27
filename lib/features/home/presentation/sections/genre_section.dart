@@ -28,7 +28,7 @@ class _GenreSectionState extends ConsumerState<GenreSection> {  List<Map<String,
 
   Future<void> _loadGenres() async {
     try {
-      final tmdbService = ref.read(tmdbServiceProvider.notifier);
+      final tmdbService = ref.read(tmdbServiceProvider);
       final genres = await tmdbService.getMovieGenres();
       setState(() {
         _genres = genres;
@@ -54,7 +54,7 @@ class _GenreSectionState extends ConsumerState<GenreSection> {  List<Map<String,
 
     try {
       setState(() => _isLoadingGenre[genreId] = true);
-      final tmdbService = ref.read(tmdbServiceProvider.notifier);
+      final tmdbService = ref.read(tmdbServiceProvider);
       final page = _currentPages[genreId] ?? 1;
       final movies = await tmdbService.getMoviesByGenre(genreId, page: page);
       

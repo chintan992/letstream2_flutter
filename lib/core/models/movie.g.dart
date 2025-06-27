@@ -19,6 +19,16 @@ _$MovieImpl _$$MovieImplFromJson(Map<String, dynamic> json) => _$MovieImpl(
       releaseDate: json['releaseDate'] as String?,
       voteAverage: (json['voteAverage'] as num?)?.toDouble() ?? 0.0,
       voteCount: (json['voteCount'] as num?)?.toInt() ?? 0,
+      adult: json['adult'] as bool? ?? false,
+      runtime: (json['runtime'] as num?)?.toInt(),
+      status: json['status'] as String?,
+      tagline: json['tagline'] as String?,
+      budget: (json['budget'] as num?)?.toInt(),
+      revenue: (json['revenue'] as num?)?.toInt(),
+      productionCompanies: (json['productionCompanies'] as List<dynamic>?)
+              ?.map((e) => e as Map<String, dynamic>)
+              .toList() ??
+          const [],
     );
 
 Map<String, dynamic> _$$MovieImplToJson(_$MovieImpl instance) =>
@@ -32,4 +42,11 @@ Map<String, dynamic> _$$MovieImplToJson(_$MovieImpl instance) =>
       'releaseDate': instance.releaseDate,
       'voteAverage': instance.voteAverage,
       'voteCount': instance.voteCount,
+      'adult': instance.adult,
+      'runtime': instance.runtime,
+      'status': instance.status,
+      'tagline': instance.tagline,
+      'budget': instance.budget,
+      'revenue': instance.revenue,
+      'productionCompanies': instance.productionCompanies,
     };

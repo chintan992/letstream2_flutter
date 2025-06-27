@@ -50,7 +50,7 @@ class _MovieListScreenState extends ConsumerState<MovieListScreen> {
 
   Future<void> _loadInitialContent() async {
     try {
-      final tmdbService = ref.read(tmdbServiceProvider.notifier);
+      final tmdbService = ref.read(tmdbServiceProvider);
       final moviesData = await _fetchMovies(tmdbService);
       
       if (mounted) {
@@ -76,7 +76,7 @@ class _MovieListScreenState extends ConsumerState<MovieListScreen> {
 
     try {
       setState(() => _isLoading = true);
-      final tmdbService = ref.read(tmdbServiceProvider.notifier);
+      final tmdbService = ref.read(tmdbServiceProvider);
       final moviesData = await _fetchMovies(tmdbService);
       
       if (mounted) {

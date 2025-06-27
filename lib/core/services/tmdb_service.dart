@@ -1,19 +1,18 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-part 'tmdb_service.g.dart';
+// Provider for TmdbService
+final tmdbServiceProvider = Provider<TmdbService>((ref) => TmdbService());
 
-@riverpod
-class TmdbService extends _$TmdbService {
+class TmdbService {
   final String _baseUrl = 'https://api.themoviedb.org/3';
   late final String _apiKey;
 
-  @override
-  Future<void> build() async {
-    _apiKey = dotenv.env['TMDB_API_KEY']!;
+  TmdbService() {
+    _apiKey = dotenv.env['TMDB_API_KEY'] ?? '';
   }
   Future<Map<String, dynamic>> _get(String endpoint, {Map<String, String>? params}) async {
     try {
@@ -109,6 +108,16 @@ class TmdbService extends _$TmdbService {
 
   Future<Map<String, dynamic>> getTvShowDetails(int tvId) async {
     return await _get('/tv/$tvId');
+  }
+
+  Future<List<Map<String, dynamic>>> getCast(String mediaType, int mediaId) async {
+    final data = await _get('/$mediaType/$mediaId/credits');
+    return List<Map<String, dynamic>>.from(data['cast']);
+  }
+
+  Future<List<Map<String, dynamic>>> getReviews(String mediaType, int mediaId) async {
+    final data = await _get('/$mediaType/$mediaId/reviews');
+    return List<Map<String, dynamic>>.from(data['results']);
   }
 
   Future<List<Map<String, dynamic>>> getTvSeasonDetails(int tvId, int seasonNumber) async {

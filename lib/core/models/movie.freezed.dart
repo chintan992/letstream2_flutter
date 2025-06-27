@@ -29,6 +29,14 @@ mixin _$Movie {
   String? get releaseDate => throw _privateConstructorUsedError;
   double get voteAverage => throw _privateConstructorUsedError;
   int get voteCount => throw _privateConstructorUsedError;
+  bool get adult => throw _privateConstructorUsedError;
+  int? get runtime => throw _privateConstructorUsedError;
+  String? get status => throw _privateConstructorUsedError;
+  String? get tagline => throw _privateConstructorUsedError;
+  int? get budget => throw _privateConstructorUsedError;
+  int? get revenue => throw _privateConstructorUsedError;
+  List<Map<String, dynamic>> get productionCompanies =>
+      throw _privateConstructorUsedError;
 
   /// Serializes this Movie to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -53,7 +61,14 @@ abstract class $MovieCopyWith<$Res> {
       String? backdropPath,
       String? releaseDate,
       double voteAverage,
-      int voteCount});
+      int voteCount,
+      bool adult,
+      int? runtime,
+      String? status,
+      String? tagline,
+      int? budget,
+      int? revenue,
+      List<Map<String, dynamic>> productionCompanies});
 }
 
 /// @nodoc
@@ -80,6 +95,13 @@ class _$MovieCopyWithImpl<$Res, $Val extends Movie>
     Object? releaseDate = freezed,
     Object? voteAverage = null,
     Object? voteCount = null,
+    Object? adult = null,
+    Object? runtime = freezed,
+    Object? status = freezed,
+    Object? tagline = freezed,
+    Object? budget = freezed,
+    Object? revenue = freezed,
+    Object? productionCompanies = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -118,6 +140,34 @@ class _$MovieCopyWithImpl<$Res, $Val extends Movie>
           ? _value.voteCount
           : voteCount // ignore: cast_nullable_to_non_nullable
               as int,
+      adult: null == adult
+          ? _value.adult
+          : adult // ignore: cast_nullable_to_non_nullable
+              as bool,
+      runtime: freezed == runtime
+          ? _value.runtime
+          : runtime // ignore: cast_nullable_to_non_nullable
+              as int?,
+      status: freezed == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as String?,
+      tagline: freezed == tagline
+          ? _value.tagline
+          : tagline // ignore: cast_nullable_to_non_nullable
+              as String?,
+      budget: freezed == budget
+          ? _value.budget
+          : budget // ignore: cast_nullable_to_non_nullable
+              as int?,
+      revenue: freezed == revenue
+          ? _value.revenue
+          : revenue // ignore: cast_nullable_to_non_nullable
+              as int?,
+      productionCompanies: null == productionCompanies
+          ? _value.productionCompanies
+          : productionCompanies // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
     ) as $Val);
   }
 }
@@ -138,7 +188,14 @@ abstract class _$$MovieImplCopyWith<$Res> implements $MovieCopyWith<$Res> {
       String? backdropPath,
       String? releaseDate,
       double voteAverage,
-      int voteCount});
+      int voteCount,
+      bool adult,
+      int? runtime,
+      String? status,
+      String? tagline,
+      int? budget,
+      int? revenue,
+      List<Map<String, dynamic>> productionCompanies});
 }
 
 /// @nodoc
@@ -163,6 +220,13 @@ class __$$MovieImplCopyWithImpl<$Res>
     Object? releaseDate = freezed,
     Object? voteAverage = null,
     Object? voteCount = null,
+    Object? adult = null,
+    Object? runtime = freezed,
+    Object? status = freezed,
+    Object? tagline = freezed,
+    Object? budget = freezed,
+    Object? revenue = freezed,
+    Object? productionCompanies = null,
   }) {
     return _then(_$MovieImpl(
       id: null == id
@@ -201,6 +265,34 @@ class __$$MovieImplCopyWithImpl<$Res>
           ? _value.voteCount
           : voteCount // ignore: cast_nullable_to_non_nullable
               as int,
+      adult: null == adult
+          ? _value.adult
+          : adult // ignore: cast_nullable_to_non_nullable
+              as bool,
+      runtime: freezed == runtime
+          ? _value.runtime
+          : runtime // ignore: cast_nullable_to_non_nullable
+              as int?,
+      status: freezed == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as String?,
+      tagline: freezed == tagline
+          ? _value.tagline
+          : tagline // ignore: cast_nullable_to_non_nullable
+              as String?,
+      budget: freezed == budget
+          ? _value.budget
+          : budget // ignore: cast_nullable_to_non_nullable
+              as int?,
+      revenue: freezed == revenue
+          ? _value.revenue
+          : revenue // ignore: cast_nullable_to_non_nullable
+              as int?,
+      productionCompanies: null == productionCompanies
+          ? _value._productionCompanies
+          : productionCompanies // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
     ));
   }
 }
@@ -217,8 +309,16 @@ class _$MovieImpl extends _Movie {
       this.backdropPath,
       this.releaseDate,
       this.voteAverage = 0.0,
-      this.voteCount = 0})
+      this.voteCount = 0,
+      this.adult = false,
+      this.runtime,
+      this.status,
+      this.tagline,
+      this.budget,
+      this.revenue,
+      final List<Map<String, dynamic>> productionCompanies = const []})
       : _genreIds = genreIds,
+        _productionCompanies = productionCompanies,
         super._();
 
   factory _$MovieImpl.fromJson(Map<String, dynamic> json) =>
@@ -251,10 +351,32 @@ class _$MovieImpl extends _Movie {
   @override
   @JsonKey()
   final int voteCount;
+  @override
+  @JsonKey()
+  final bool adult;
+  @override
+  final int? runtime;
+  @override
+  final String? status;
+  @override
+  final String? tagline;
+  @override
+  final int? budget;
+  @override
+  final int? revenue;
+  final List<Map<String, dynamic>> _productionCompanies;
+  @override
+  @JsonKey()
+  List<Map<String, dynamic>> get productionCompanies {
+    if (_productionCompanies is EqualUnmodifiableListView)
+      return _productionCompanies;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_productionCompanies);
+  }
 
   @override
   String toString() {
-    return 'Movie(id: $id, title: $title, overview: $overview, genreIds: $genreIds, posterPath: $posterPath, backdropPath: $backdropPath, releaseDate: $releaseDate, voteAverage: $voteAverage, voteCount: $voteCount)';
+    return 'Movie(id: $id, title: $title, overview: $overview, genreIds: $genreIds, posterPath: $posterPath, backdropPath: $backdropPath, releaseDate: $releaseDate, voteAverage: $voteAverage, voteCount: $voteCount, adult: $adult, runtime: $runtime, status: $status, tagline: $tagline, budget: $budget, revenue: $revenue, productionCompanies: $productionCompanies)';
   }
 
   @override
@@ -276,7 +398,15 @@ class _$MovieImpl extends _Movie {
             (identical(other.voteAverage, voteAverage) ||
                 other.voteAverage == voteAverage) &&
             (identical(other.voteCount, voteCount) ||
-                other.voteCount == voteCount));
+                other.voteCount == voteCount) &&
+            (identical(other.adult, adult) || other.adult == adult) &&
+            (identical(other.runtime, runtime) || other.runtime == runtime) &&
+            (identical(other.status, status) || other.status == status) &&
+            (identical(other.tagline, tagline) || other.tagline == tagline) &&
+            (identical(other.budget, budget) || other.budget == budget) &&
+            (identical(other.revenue, revenue) || other.revenue == revenue) &&
+            const DeepCollectionEquality()
+                .equals(other._productionCompanies, _productionCompanies));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -291,7 +421,14 @@ class _$MovieImpl extends _Movie {
       backdropPath,
       releaseDate,
       voteAverage,
-      voteCount);
+      voteCount,
+      adult,
+      runtime,
+      status,
+      tagline,
+      budget,
+      revenue,
+      const DeepCollectionEquality().hash(_productionCompanies));
 
   /// Create a copy of Movie
   /// with the given fields replaced by the non-null parameter values.
@@ -319,7 +456,14 @@ abstract class _Movie extends Movie {
       final String? backdropPath,
       final String? releaseDate,
       final double voteAverage,
-      final int voteCount}) = _$MovieImpl;
+      final int voteCount,
+      final bool adult,
+      final int? runtime,
+      final String? status,
+      final String? tagline,
+      final int? budget,
+      final int? revenue,
+      final List<Map<String, dynamic>> productionCompanies}) = _$MovieImpl;
   const _Movie._() : super._();
 
   factory _Movie.fromJson(Map<String, dynamic> json) = _$MovieImpl.fromJson;
@@ -342,6 +486,20 @@ abstract class _Movie extends Movie {
   double get voteAverage;
   @override
   int get voteCount;
+  @override
+  bool get adult;
+  @override
+  int? get runtime;
+  @override
+  String? get status;
+  @override
+  String? get tagline;
+  @override
+  int? get budget;
+  @override
+  int? get revenue;
+  @override
+  List<Map<String, dynamic>> get productionCompanies;
 
   /// Create a copy of Movie
   /// with the given fields replaced by the non-null parameter values.

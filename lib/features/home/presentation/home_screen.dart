@@ -54,7 +54,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _loadInitialContent() async {
     try {
       setState(() => _isLoading = true);
-      final tmdbService = ref.read(tmdbServiceProvider.notifier);
+      final tmdbService = ref.read(tmdbServiceProvider);
       final trendingData = await tmdbService.getTrendingMovies();
         debugPrint('HomeScreen - Got trending data, length: ${trendingData.length}');
       if (trendingData.isNotEmpty) {
@@ -88,7 +88,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (_isLoading) return;
     try {
       setState(() => _isLoading = true);
-      final tmdbService = ref.read(tmdbServiceProvider.notifier);
+      final tmdbService = ref.read(tmdbServiceProvider);
       final movies = await tmdbService.getTrendingMovies(page: _currentPage);
       
       if (mounted) {
