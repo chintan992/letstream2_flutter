@@ -82,8 +82,8 @@ class _LazyLoadScrollViewState extends State<LazyLoadScrollView> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withOpacity(0),
-                      Colors.black.withOpacity(0.8),
+                      Colors.black.withValues(alpha: 0.0),
+                      Colors.black.withValues(alpha: 0.8),
                     ],
                   ),
                 ),

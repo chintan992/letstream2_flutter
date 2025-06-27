@@ -123,7 +123,7 @@ class _MovieListScreenState extends ConsumerState<MovieListScreen> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         title: Text(widget.title),
-        backgroundColor: Colors.black.withOpacity(0.5),
+        backgroundColor: Colors.black.withValues(alpha: 0.5),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),

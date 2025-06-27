@@ -94,8 +94,8 @@ class _HeroBannerState extends State<HeroBanner> with SingleTickerProviderStateM
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          Colors.black.withOpacity(0.6),
-                          Colors.black.withOpacity(0.9),
+                          Colors.black.withValues(alpha: 0.6),
+                          Colors.black.withValues(alpha: 0.9),
                         ],
                         stops: const [0.0, 0.5, 1.0],
                       ),
@@ -125,7 +125,7 @@ class _HeroBannerState extends State<HeroBanner> with SingleTickerProviderStateM
                           Shadow(
                             offset: const Offset(2.0, 2.0),
                             blurRadius: 3.0,
-                            color: Colors.black.withOpacity(0.5),
+                            color: Colors.black.withValues(alpha: 0.5),
                           ),
                         ],
                       ),
@@ -170,7 +170,7 @@ class _HeroBannerState extends State<HeroBanner> with SingleTickerProviderStateM
                     Text(
                       overview,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                       ),
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,

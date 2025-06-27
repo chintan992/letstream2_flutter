@@ -41,7 +41,7 @@ class MediaGrid extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 5,
                     offset: const Offset(0, 2),
                   ),
@@ -66,7 +66,7 @@ class MediaGrid extends StatelessWidget {
                             begin: Alignment.bottomCenter,
                             end: Alignment.topCenter,
                             colors: [
-                              Colors.black.withOpacity(0.8),
+                              Colors.black.withValues(alpha: 0.8),
                               Colors.transparent,
                             ],
                           ),
@@ -87,7 +87,7 @@ class MediaGrid extends StatelessWidget {
                             const SizedBox(height: 4),                            Text(
                               movie.releaseYear?.toString() ?? 'TBA',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.8),
+                                color: Colors.white.withValues(alpha: 0.8),
                                 fontSize: 12,
                               ),
                             ),
@@ -105,7 +105,7 @@ class MediaGrid extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.8),
+                            color: Colors.black.withValues(alpha: 0.8),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Row(

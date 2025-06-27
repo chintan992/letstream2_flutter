@@ -31,7 +31,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   VideoSource? _currentSource;
   String? _currentUrl;
   bool _isLoading = true;
-  final bool _showControls = true;
+  // final bool _showControls = true; // Removed unused field
   String? _error;
 
 
@@ -303,15 +303,20 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
 
   Future<void> _injectErrorHandling() async {
     try {
+      // Always ensure console.log is a function before anything else
+      await _controller.runJavaScript('''
+        if (typeof console === 'undefined') window.console = {};
+        if (typeof console.log !== 'function') console.log = function(){};
+      ''');
       await _controller.runJavaScript('''
         // Override fetch to handle ORB errors
         (function() {
           const originalFetch = window.fetch;
           window.fetch = function(...args) {
             return originalFetch.apply(this, args).catch(error => {
-              if (error.message.includes('net::ERR_BLOCKED_BY_ORB') || 
+              if (error.message && (error.message.includes('net::ERR_BLOCKED_BY_ORB') || 
                   error.message.includes('CORS') ||
-                  error.message.includes('blocked by CORS policy')) {
+                  error.message.includes('blocked by CORS policy'))) {
                 console.log('Suppressed ORB/CORS error:', error.message);
                 // Return empty response instead of throwing
                 return new Response('', { status: 204, statusText: 'No Content' });
