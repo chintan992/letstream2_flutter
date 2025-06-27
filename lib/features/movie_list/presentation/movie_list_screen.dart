@@ -134,7 +134,13 @@ class _MovieListScreenState extends ConsumerState<MovieListScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              context.pop();
+            } else {
+              context.go('/');
+            }
+          },
         ),
         actions: [
           Container(

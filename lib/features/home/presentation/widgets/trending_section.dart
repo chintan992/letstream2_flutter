@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/models/movie.dart';
 import '../../../../core/models/tv_show.dart';
 import '../../../../core/widgets/lazy_load_scroll_view.dart';
@@ -52,15 +53,14 @@ class _TrendingSectionState extends State<TrendingSection> {
                   letterSpacing: 0.2,
                 ),
               ),
-              IconButton(
-                icon: const Icon(
-                  Icons.arrow_forward,
-                  color: Colors.white70,
-                  size: 20,
+              TextButton(
+                onPressed: () => context.go(
+                  '/movies/trending?title=Trending Movies',
                 ),
-                onPressed: () {
-                  // TODO: Implement view all functionality
-                },
+                child: const Text(
+                  'View All',
+                  style: TextStyle(color: Colors.white70),
+                ),
               ),
             ],
           ),
