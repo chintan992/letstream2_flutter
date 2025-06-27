@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/models/movie.dart';
 import '../../../core/services/tmdb_service.dart';
-import '../../../core/widgets/media_grid.dart';
+import '../../../core/widgets/enhanced_media_grid.dart';
 
 class MovieListScreen extends ConsumerStatefulWidget {
   final String title;
@@ -122,28 +122,126 @@ class _MovieListScreenState extends ConsumerState<MovieListScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text(widget.title),
-        backgroundColor: Colors.black.withValues(alpha: 0.5),
+        title: Text(
+          widget.title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+          ),
+        ),
+        backgroundColor: Colors.black.withValues(alpha: 0.95),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => context.pop(),
+        ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.red.withValues(alpha: 0.8),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              '${_movies.length} movies',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ],
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withValues(alpha: 0.95),
+                Colors.black.withValues(alpha: 0.8),
+              ],
+            ),
+          ),
         ),
       ),
       body: _error != null
           ? Center(
-              child: Text(
-                _error!,
-                style: const TextStyle(color: Colors.white),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    color: Colors.red.withValues(alpha: 0.7),
+                    size: 64,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Oops! Something went wrong',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _error!,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 16,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _error = null;
+                        _isLoading = true;
+                        _movies.clear();
+                        _currentPage = 1;
+                      });
+                      _loadInitialContent();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Try Again'),
+                  ),
+                ],
               ),
             )
-          : MediaGrid(
+          : EnhancedMediaGrid(
               movies: _movies,
               isLoading: _isLoading,
               hasMore: _hasMore,
               scrollController: _scrollController,
-              onMovieTap: (movie) => context.push('/details/${movie.id}'),
+              onMovieTap: (movie) => context.push('/details/${movie.id}?type=movie'),
             ),
+      floatingActionButton: _movies.isNotEmpty ? FloatingActionButton.extended(
+        onPressed: () {
+          _scrollController.animateTo(
+            0,
+            duration: const Duration(milliseconds: 800),
+            curve: Curves.easeOutCubic,
+          );
+        },
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.keyboard_arrow_up),
+        label: const Text('Scroll to Top'),
+        elevation: 8,
+      ) : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }
