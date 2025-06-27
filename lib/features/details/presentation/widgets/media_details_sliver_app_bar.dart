@@ -62,7 +62,7 @@ class MediaDetailsSliverAppBar extends StatelessWidget {
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.transparent,
-                      Colors.black.withOpacity(0.7),
+                      Colors.black.withValues(alpha: 0.7),
                       Colors.black,
                     ],
                     stops: const [0.0, 0.6, 1.0],
@@ -91,7 +91,7 @@ class MediaDetailsSliverAppBar extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16,
                           fontStyle: FontStyle.italic,
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                         ),
                       ),
                     ],

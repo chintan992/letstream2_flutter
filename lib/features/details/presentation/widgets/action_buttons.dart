@@ -29,7 +29,7 @@ class ActionButtons extends StatelessWidget {
             onPressed: () {},
             icon: const Icon(Icons.favorite_border),
             style: IconButton.styleFrom(
-              side: BorderSide(color: Colors.white.withOpacity(0.5)),
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -40,7 +40,7 @@ class ActionButtons extends StatelessWidget {
             onPressed: () {},
             icon: const Icon(Icons.bookmark_border),
             style: IconButton.styleFrom(
-              side: BorderSide(color: Colors.white.withOpacity(0.5)),
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
