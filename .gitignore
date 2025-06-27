@@ -1,3 +1,5 @@
+# Ignore chat.json (large file)
+chat.json
 # Miscellaneous
 *.class
 *.log
