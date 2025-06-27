@@ -108,7 +108,7 @@ class _ContentSectionState extends State<ContentSection> {
                               rating: rating,
                               onTap: () => widget.onMediaTap(media),
                               width: desiredCardWidth,
-                              heroTag: "media-${media.id}-$index",
+                              heroTag: "content-${widget.title.replaceAll(' ', '_').toLowerCase()}-${media.id}-$index",
                             ),
                           ),
                           if (widget.showMetadata)

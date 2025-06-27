@@ -108,7 +108,7 @@ class _GenreSectionState extends ConsumerState<GenreSection> {  List<Map<String,
           onMediaTap: (movie) {
             final context = this.context;
             if (!mounted) return;
-            context.go('/movies/${(movie as Movie).id}');
+            context.push('/details/${(movie as Movie).id}?type=movie');
           },
           trailing: TextButton(
             onPressed: () => context.go(

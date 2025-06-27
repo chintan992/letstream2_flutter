@@ -16,11 +16,13 @@ import 'widgets/reviews_tab.dart';
 class MediaDetailsScreen extends ConsumerStatefulWidget {
   final String mediaType;
   final int mediaId;
+  final String? heroTag;
 
   const MediaDetailsScreen({
     super.key,
     required this.mediaType,
     required this.mediaId,
+    this.heroTag,
   });
 
   @override
@@ -85,7 +87,7 @@ class _MediaDetailsScreenState extends ConsumerState<MediaDetailsScreen>
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             MediaDetailsSliverAppBar(
-              heroTag: 'details-backdrop-${_mediaDetails.id}',
+              heroTag: widget.heroTag ?? 'details-backdrop-${_mediaDetails.id}',
               backdropPath: _mediaDetails.backdropPath,
               title: _mediaDetails.title,
               tagline: _mediaDetails.tagline,
