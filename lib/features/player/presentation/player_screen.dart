@@ -1,397 +1,334 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import '../../../core/models/movie.dart';
-import '../../../core/models/tv_show.dart';
-import '../../../core/models/video_source.dart';
 import '../../../core/services/video_sources_service.dart';
+import '../../../core/models/video_source.dart';
 
 class PlayerScreen extends ConsumerStatefulWidget {
-  final dynamic media;
+  final Map<String, dynamic> media;
   final int? season;
   final int? episode;
-  final String? initialUrl;
 
   const PlayerScreen({
     super.key,
     required this.media,
     this.season,
     this.episode,
-    this.initialUrl,
   });
 
   @override
   ConsumerState<PlayerScreen> createState() => _PlayerScreenState();
 }
 
-class _PlayerScreenState extends ConsumerState<PlayerScreen> {
-  late WebViewController _controller;
-  List<VideoSource> _videoSources = [];
+class _PlayerScreenState extends ConsumerState<PlayerScreen> with WidgetsBindingObserver {
+  WebViewController? _controller;
   VideoSource? _currentSource;
-  String? _currentUrl;
+  bool _showControls = true;
+  Timer? _controlsTimer;
   bool _isLoading = true;
-  // final bool _showControls = true; // Removed unused field
-  String? _error;
-
 
   @override
   void initState() {
     super.initState();
-    _setLandscape();
-    _loadVideoSources();
-  }
-  
-  Future<void> _loadVideoSources() async {
-    try {
-      setState(() => _isLoading = true);
-      final sources = await ref.read(videoSourcesServiceProvider.future);
-      
-      setState(() {
-        _videoSources = sources;
-        if (sources.isNotEmpty) {
-          _currentSource = sources.first;
-          _currentUrl = _generateUrl(_currentSource!);
-        }
-        _isLoading = false;
-      });
-      
-      if (_currentUrl != null) {
-        _initWebView();
-      }
-    } catch (e) {
-      setState(() {
-        _error = 'Failed to load video sources: $e';
-        _isLoading = false;
-      });
-    }
-  }
-  
-
-  String _generateUrl(VideoSource source) {
-    final videoService = ref.read(videoSourcesServiceProvider.notifier);
-    final mediaId = _getMediaId();
-    final isTvShow = _isMediaTvShow();
-    
-    return videoService.generateStreamingUrl(
-      source,
-      id: mediaId,
-      season: widget.season?.toString(),
-      episode: widget.episode?.toString(),
-      isTvShow: isTvShow,
-    );
-  }
-  
-  bool _isMediaTvShow() {
-    if (widget.media is TvShow) return true;
-    if (widget.media is Map<String, dynamic>) {
-      return widget.media['type'] == 'tv';
-    }
-    return false;
-  }
-  
-  int _getMediaId() {
-    if (widget.media is Movie) {
-      return (widget.media as Movie).id;
-    } else if (widget.media is TvShow) {
-      return (widget.media as TvShow).id;
-    } else if (widget.media is Map<String, dynamic>) {
-      return widget.media['id'] as int;
-    }
-    throw Exception('Cannot extract media ID');
+    WidgetsBinding.instance.addObserver(this);
+    _setLandscapeOrientation();
+    _loadFirstSource();
   }
 
-  void _initWebView() {
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.black)
-      ..enableZoom(false)
-      ..setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36')
-      ..addJavaScriptChannel(
-        'console',
-        onMessageReceived: (message) {
-          debugPrint('JavaScript Console: ${message.message}');
-        },
-      )
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onNavigationRequest: (request) {
-            final url = request.url;
-            debugPrint('Navigation request: $url');
-            
-            // Block requests that try to open new windows (indicated by target)
-            if (request.isMainFrame == false) {
-              debugPrint('Blocked non-main frame request: $url');
-              return NavigationDecision.prevent;
-            }
-            
-            // Allow all other navigation requests
-            debugPrint('Allowed navigation: $url');
-            return NavigationDecision.navigate;
-          },
-          onPageStarted: (url) {
-            setState(() => _isLoading = true);
-            debugPrint('Page started loading: $url');
-          },
-          onPageFinished: (url) async {
-            setState(() => _isLoading = false);
-            debugPrint('Page finished loading: $url');
-            
-            // Inject JavaScript to handle ORB and CORS errors
-            await _injectErrorHandling();
-          },
-          onWebResourceError: (error) {
-            setState(() {
-              _error = 'Failed to load video: ${error.description}';
-              _isLoading = false;
-            });
-            debugPrint('Web resource error: ${error.description}');
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse(_currentUrl!));
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _resetOrientation();
+    _controlsTimer?.cancel();
+    super.dispose();
   }
 
-  void _setLandscape() {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _setLandscapeOrientation();
+    }
+  }
+
+  void _setLandscapeOrientation() {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   }
 
   void _resetOrientation() {
-    SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   }
-  
 
-  void _switchSource(VideoSource source) {
-    setState(() {
-      _currentSource = source;
-      _currentUrl = _generateUrl(source);
-      _isLoading = true;
-      _error = null;
-    });
-    _controller.loadRequest(Uri.parse(_currentUrl!));
+  Future<void> _loadFirstSource() async {
+    try {
+      final sources = await ref.read(videoSourcesServiceProvider.future);
+      if (sources.isNotEmpty && mounted) {
+        _loadSource(sources.first);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading sources: $e')),
+        );
+      }
+    }
   }
 
-  void _showSourceSelector() {
+  void _loadSource(VideoSource source) {
+    final mediaId = widget.media['id'] as int;
+    final isTvShow = widget.media['type'] == 'tv';
+    
+    try {
+      final url = ref.read(videoSourcesServiceProvider.notifier).generateStreamingUrl(
+        source,
+        id: mediaId,
+        season: widget.season?.toString(),
+        episode: widget.episode?.toString(),
+        isTvShow: isTvShow,
+      );
+
+      setState(() {
+        _currentSource = source;
+        _isLoading = true;
+      });
+
+      _controller = WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setNavigationDelegate(
+          NavigationDelegate(
+            onPageStarted: (_) {
+              setState(() {
+                _isLoading = true;
+              });
+            },
+            onPageFinished: (_) {
+              setState(() {
+                _isLoading = false;
+              });
+            },
+            // Strictly control navigation
+            onNavigationRequest: (NavigationRequest request) {
+              // Only allow the exact initial URL to load
+              if (request.url == url) {
+                return NavigationDecision.navigate;
+              }
+              
+              // Log and block all other navigation
+              //print('Blocked navigation to: ${request.url}');
+              
+              // For embedded players, allow same-origin iframe src
+              final Uri initialUri = Uri.parse(url);
+              final Uri requestUri = Uri.parse(request.url);
+              if (requestUri.host == initialUri.host && 
+                  (request.url.contains('/embed/') || request.url.contains('/player/'))) {
+                //print('Allowed player-related navigation: ${request.url}');
+                return NavigationDecision.navigate;
+              }
+              
+              // After blocking, reload the original URL if not on current page
+              if (_controller != null) {
+                _controller!.runJavaScript(
+                  "if(window.location.href !== '$url') { window.location.replace('$url'); }"
+                );
+              }
+              
+              return NavigationDecision.prevent;
+            },
+            onWebResourceError: (error) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: ${error.description}')),
+                );
+              }
+            },
+          ),
+        )
+        ..setBackgroundColor(Colors.black)
+        // Set mobile user agent to help prevent some popups
+        ..setUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1')
+        // Disable zooming
+        ..enableZoom(false)
+        // Execute JavaScript to block popups
+        ..addJavaScriptChannel('FlutterApp', onMessageReceived: (JavaScriptMessage message) {
+         // print('From JavaScript: ${message.message}');
+        })
+        ..loadRequest(Uri.parse(url))
+        // Run JavaScript to override window.open and block popups
+        ..runJavaScript('''
+          // Override window.open to prevent popups
+          window.open = function(url, target, features) {
+            window.FlutterApp.postMessage('Popup blocked: ' + url);
+            return null;
+          };
+          
+          // Also block common ad redirects
+          const originalCreateElement = document.createElement;
+          document.createElement = function(...args) {
+            const element = originalCreateElement.apply(document, args);
+            if (args[0].toLowerCase() === 'iframe') {
+              // Monitor iframe src changes
+              const originalSetter = Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype, 'src').set;
+              Object.defineProperty(element, 'src', {
+                set(url) {
+                  if (url.includes('ad') || url.includes('pop') || url.includes('banner')) {
+                    window.FlutterApp.postMessage('Blocked iframe: ' + url);
+                    return;
+                  }
+                  originalSetter.call(this, url);
+                }
+              });
+            }
+            return element;
+          };
+          
+          // Block page redirects by monitoring location changes
+          const originalAssign = window.location.assign;
+          window.location.assign = function(url) {
+            window.FlutterApp.postMessage('Blocked redirect to: ' + url);
+            return false;
+          };
+          
+          const originalReplace = window.location.replace;
+          window.location.replace = function(url) {
+            if (url !== '$url') {
+              window.FlutterApp.postMessage('Blocked replace to: ' + url);
+              return false;
+            }
+            return originalReplace.call(window.location, url);
+          };
+          
+          // Set up periodic check to ensure we're on the correct URL
+          const originalUrl = '$url';
+          setInterval(function() {
+            if (window.location.href !== originalUrl) {
+              window.FlutterApp.postMessage('Detected URL change, restoring original');
+              originalReplace.call(window.location, originalUrl);
+            }
+          }, 1000); // Check every second
+        ''');
+
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
+  }
+
+  void _toggleControls() {
+    setState(() {
+      _showControls = !_showControls;
+    });
+    
+    _controlsTimer?.cancel();
+    if (_showControls) {
+      _controlsTimer = Timer(const Duration(seconds: 3), () {
+        if (mounted) {
+          setState(() {
+            _showControls = false;
+          });
+        }
+      });
+    }
+  }
+
+  void _showSourceSelection() async {
+    final sources = await ref.read(videoSourcesServiceProvider.future);
+    if (!mounted) return;
+
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.grey[900],
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Select Video Source',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ..._videoSources.map((source) => ListTile(
-              title: Text(
-                source.name,
-                style: const TextStyle(color: Colors.white),
-              ),
-              leading: Icon(
-                _currentSource?.key == source.key
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_unchecked,
-                color: _currentSource?.key == source.key
-                    ? Colors.blue
-                    : Colors.grey,
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _switchSource(source);
-              },
-            )),
-          ],
-        ),
+      builder: (context) => ListView.builder(
+        shrinkWrap: true,
+        itemCount: sources.length,
+        itemBuilder: (context, index) {
+          final source = sources[index];
+          return ListTile(
+            title: Text(source.name),
+            selected: _currentSource?.key == source.key,
+            onTap: () {
+              Navigator.pop(context);
+              _loadSource(source);
+            },
+          );
+        },
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_error != null) {
-      return Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                color: Colors.red,
-                size: 64,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                _error!,
-                style: const TextStyle(color: Colors.white),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _loadVideoSources,
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (_currentUrl == null) {
-      return const Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(
-          child: CircularProgressIndicator(color: Colors.white),
-        ),
-      );
-    }
-
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SafeArea(
+      body: GestureDetector(
+        onTap: _toggleControls,
         child: Stack(
           children: [
-            WebViewWidget(controller: _controller),
+            // WebView
+            _controller != null
+                ? WebViewWidget(controller: _controller!)
+                : const Center(child: CircularProgressIndicator()),
+                
+            // Loading indicator
             if (_isLoading)
               const Center(
                 child: CircularProgressIndicator(color: Colors.white),
               ),
-            Positioned(
-              top: 16,
-              left: 16,
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () {
-                  _resetOrientation();
-                  Navigator.of(context).pop();
-                },
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.black54,
+              
+            // Overlay controls
+            AnimatedOpacity(
+              opacity: _showControls ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 300),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.center,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.7),
+                      Colors.transparent,
+                    ],
+                  ),
                 ),
-              ),
-            ),
-            if (_videoSources.length > 1)
-              Positioned(
-                top: 16,
-                right: 16,
-                child: IconButton(
-                  icon: const Icon(Icons.switch_video, color: Colors.white),
-                  onPressed: _showSourceSelector,
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.black54,
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Back button
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                        
+                        // Sources button
+                        IconButton(
+                          icon: const Icon(Icons.playlist_play, color: Colors.white, size: 28),
+                          onPressed: _showSourceSelection,
+                          tooltip: 'Sources',
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
+            ),
           ],
         ),
       ),
     );
-  }
-
-  Future<void> _injectErrorHandling() async {
-    try {
-      // Always ensure console.log is a function before anything else
-      await _controller.runJavaScript('''
-        if (typeof console === 'undefined') window.console = {};
-        if (typeof console.log !== 'function') console.log = function(){};
-      ''');
-      await _controller.runJavaScript('''
-        // Override fetch to handle ORB errors
-        (function() {
-          const originalFetch = window.fetch;
-          window.fetch = function(...args) {
-            return originalFetch.apply(this, args).catch(error => {
-              if (error.message && (error.message.includes('net::ERR_BLOCKED_BY_ORB') || 
-                  error.message.includes('CORS') ||
-                  error.message.includes('blocked by CORS policy'))) {
-                console.log('Suppressed ORB/CORS error:', error.message);
-                // Return empty response instead of throwing
-                return new Response('', { status: 204, statusText: 'No Content' });
-              }
-              throw error;
-            });
-          };
-          
-          // Override XMLHttpRequest to handle ORB errors
-          const originalXHRSend = XMLHttpRequest.prototype.send;
-          XMLHttpRequest.prototype.send = function(data) {
-            this.addEventListener('error', function(e) {
-              if (this.status === 0) {
-                console.log('Suppressed XHR ORB/CORS error');
-                e.stopPropagation();
-                e.preventDefault();
-              }
-            });
-            return originalXHRSend.apply(this, arguments);
-          };
-          
-          // Block known ad scripts and requests
-          const blockedDomains = [
-            'adsco.re',
-            '4.adsco.re',
-            '6.adsco.re', 
-            'c.adsco.re',
-            'googleadservices.com',
-            'googlesyndication.com',
-            'doubleclick.net'
-          ];
-          
-          // Override createElement to block script tags from ad domains
-          const originalCreateElement = document.createElement;
-          document.createElement = function(tagName) {
-            const element = originalCreateElement.apply(this, arguments);
-            if (tagName.toLowerCase() === 'script') {
-              const originalSetAttribute = element.setAttribute;
-              element.setAttribute = function(name, value) {
-                if (name === 'src' && blockedDomains.some(domain => value.includes(domain))) {
-                  console.log('Blocked ad script:', value);
-                  return;
-                }
-                return originalSetAttribute.apply(this, arguments);
-              };
-            }
-            return element;
-          };
-          
-          // Suppress console errors from ORB
-          const originalConsoleError = console.error;
-          console.error = function(...args) {
-            const message = args[0];
-            if (typeof message === 'string' && (
-                message.includes('net::ERR_BLOCKED_BY_ORB') ||
-                message.includes('CORS policy') ||
-                message.includes('blocked by CORS')
-            )) {
-              console.log('Suppressed ORB/CORS console error:', message);
-              return;
-            }
-            return originalConsoleError.apply(this, args);
-          };
-          
-          console.log('ORB/CORS error handling injected successfully');
-        })();
-      ''');
-    } catch (e) {
-      debugPrint('Failed to inject error handling: $e');
-    }
-  }
-
-  @override
-  void dispose() {
-    _resetOrientation();
-    super.dispose();
   }
 }
