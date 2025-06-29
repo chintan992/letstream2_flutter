@@ -10,10 +10,10 @@ _$ReviewImpl _$$ReviewImplFromJson(Map<String, dynamic> json) => _$ReviewImpl(
       id: json['id'] as String,
       author: json['author'] as String,
       content: json['content'] as String,
-      authorDetails: json['author_details'] == null
+      authorDetails: json['authorDetails'] == null
           ? null
           : AuthorDetails.fromJson(
-              json['author_details'] as Map<String, dynamic>),
+              json['authorDetails'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$ReviewImplToJson(_$ReviewImpl instance) =>
@@ -21,15 +21,15 @@ Map<String, dynamic> _$$ReviewImplToJson(_$ReviewImpl instance) =>
       'id': instance.id,
       'author': instance.author,
       'content': instance.content,
-      'author_details': instance.authorDetails,
+      'authorDetails': instance.authorDetails,
     };
 
 _$AuthorDetailsImpl _$$AuthorDetailsImplFromJson(Map<String, dynamic> json) =>
     _$AuthorDetailsImpl(
-      avatarPath: json['avatar_path'] as String?,
+      avatarPath: json['avatarPath'] as String?,
     );
 
 Map<String, dynamic> _$$AuthorDetailsImplToJson(_$AuthorDetailsImpl instance) =>
     <String, dynamic>{
-      'avatar_path': instance.avatarPath,
+      'avatarPath': instance.avatarPath,
     };

@@ -23,7 +23,6 @@ mixin _$Review {
   String get id => throw _privateConstructorUsedError;
   String get author => throw _privateConstructorUsedError;
   String get content => throw _privateConstructorUsedError;
-  @JsonKey(name: 'author_details')
   AuthorDetails? get authorDetails => throw _privateConstructorUsedError;
 
   /// Serializes this Review to a JSON map.
@@ -41,10 +40,7 @@ abstract class $ReviewCopyWith<$Res> {
       _$ReviewCopyWithImpl<$Res, Review>;
   @useResult
   $Res call(
-      {String id,
-      String author,
-      String content,
-      @JsonKey(name: 'author_details') AuthorDetails? authorDetails});
+      {String id, String author, String content, AuthorDetails? authorDetails});
 
   $AuthorDetailsCopyWith<$Res>? get authorDetails;
 }
@@ -112,10 +108,7 @@ abstract class _$$ReviewImplCopyWith<$Res> implements $ReviewCopyWith<$Res> {
   @override
   @useResult
   $Res call(
-      {String id,
-      String author,
-      String content,
-      @JsonKey(name: 'author_details') AuthorDetails? authorDetails});
+      {String id, String author, String content, AuthorDetails? authorDetails});
 
   @override
   $AuthorDetailsCopyWith<$Res>? get authorDetails;
@@ -167,7 +160,7 @@ class _$ReviewImpl implements _Review {
       {required this.id,
       required this.author,
       required this.content,
-      @JsonKey(name: 'author_details') this.authorDetails});
+      this.authorDetails});
 
   factory _$ReviewImpl.fromJson(Map<String, dynamic> json) =>
       _$$ReviewImplFromJson(json);
@@ -179,7 +172,6 @@ class _$ReviewImpl implements _Review {
   @override
   final String content;
   @override
-  @JsonKey(name: 'author_details')
   final AuthorDetails? authorDetails;
 
   @override
@@ -225,7 +217,6 @@ abstract class _Review implements Review {
       {required final String id,
       required final String author,
       required final String content,
-      @JsonKey(name: 'author_details')
       final AuthorDetails? authorDetails}) = _$ReviewImpl;
 
   factory _Review.fromJson(Map<String, dynamic> json) = _$ReviewImpl.fromJson;
@@ -237,7 +228,6 @@ abstract class _Review implements Review {
   @override
   String get content;
   @override
-  @JsonKey(name: 'author_details')
   AuthorDetails? get authorDetails;
 
   /// Create a copy of Review
@@ -254,7 +244,6 @@ AuthorDetails _$AuthorDetailsFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$AuthorDetails {
-  @JsonKey(name: 'avatar_path')
   String? get avatarPath => throw _privateConstructorUsedError;
 
   /// Serializes this AuthorDetails to a JSON map.
@@ -273,7 +262,7 @@ abstract class $AuthorDetailsCopyWith<$Res> {
           AuthorDetails value, $Res Function(AuthorDetails) then) =
       _$AuthorDetailsCopyWithImpl<$Res, AuthorDetails>;
   @useResult
-  $Res call({@JsonKey(name: 'avatar_path') String? avatarPath});
+  $Res call({String? avatarPath});
 }
 
 /// @nodoc
@@ -310,7 +299,7 @@ abstract class _$$AuthorDetailsImplCopyWith<$Res>
       __$$AuthorDetailsImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({@JsonKey(name: 'avatar_path') String? avatarPath});
+  $Res call({String? avatarPath});
 }
 
 /// @nodoc
@@ -340,13 +329,12 @@ class __$$AuthorDetailsImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$AuthorDetailsImpl implements _AuthorDetails {
-  const _$AuthorDetailsImpl({@JsonKey(name: 'avatar_path') this.avatarPath});
+  const _$AuthorDetailsImpl({this.avatarPath});
 
   factory _$AuthorDetailsImpl.fromJson(Map<String, dynamic> json) =>
       _$$AuthorDetailsImplFromJson(json);
 
   @override
-  @JsonKey(name: 'avatar_path')
   final String? avatarPath;
 
   @override
@@ -384,15 +372,13 @@ class _$AuthorDetailsImpl implements _AuthorDetails {
 }
 
 abstract class _AuthorDetails implements AuthorDetails {
-  const factory _AuthorDetails(
-          {@JsonKey(name: 'avatar_path') final String? avatarPath}) =
+  const factory _AuthorDetails({final String? avatarPath}) =
       _$AuthorDetailsImpl;
 
   factory _AuthorDetails.fromJson(Map<String, dynamic> json) =
       _$AuthorDetailsImpl.fromJson;
 
   @override
-  @JsonKey(name: 'avatar_path')
   String? get avatarPath;
 
   /// Create a copy of AuthorDetails

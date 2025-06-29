@@ -1,0 +1,250 @@
+# Flutter Download Feature Implementation Guide
+
+Currently we have a working flutter project with some of the core functionalities established. One of the core is to add a downloads tab on media details screen. Technical Documentation: Flutter Download Functionality (Conceptual Guide)This document provides a comprehensive, code-free guide for implementing the download feature into your Flutter application, adapted to your specific project structure. It outlines the necessary files, their purpose, and the overall logic.1. Project StructureTo begin, you will need to create a new feature folder named downloads and add several new files to your existing core directory.New Directory:lib/features/downloads/presentation/widgets/New Files:lib/core/models/download_result.dartlib/core/services/download_service.dartlib/core/utils/quality_tags.dartlib/features/downloads/presentation/widgets/download_card.dartlib/features/downloads/presentation/widgets/download_section.dartlib/features/downloads/presentation/widgets/tv_download_section.dart2. DependenciesYour pubspec.yaml file must include the following packages to handle HTTP requests and open URLs:httpurl_launcher3. Data ModelA new data model, DownloadResult, needs to be created in lib/core/models/. This model will represent a single download link object returned from the API. It should be set up to handle JSON serialization and will contain fields for:title (String)size (String)downloadUrl (String)fileId (String)Using a code generation library like freezed is recommended to create this model efficiently.4. Download ServiceA new service, DownloadService, should be created in lib/core/services/. This class will be responsible for all network operations related to fetching download links.Two-Step URL Fetching: The service will first fetch a base URL from your local proxy <https://vd-src-worker.chintanr21.workers.dev/download> Response-> "<https://backend.xprime.tv/servers/downloader?name="(plain> text string)). This proxy is expected to return a plain text string containing the actual backend URL.Dynamic Link Generation: After retrieving the base URL, the service will use it to construct the final request URL. It will append the media name and, if applicable, the season and episode numbers.Error Handling: The service should include error handling and a fallback URL in case the local proxy is unavailable.5. Quality Tag UtilityA new utility file, quality_tags.dart, should be created in lib/core/utils/. This file will contain a function, extractQualityTags, which takes a file title string as input. It will compare this title against a predefined list of common quality tags (e.g., '1080p', 'HEVC', 'WEBRip') and return a list of all matching tags found in the title.6. UI WidgetsThe user interface for the download feature will be built from three modular widgets, located in the new lib/features/downloads/presentation/widgets/ directory.DownloadCard WidgetThis widget is responsible for displaying a single download link in a visually appealing card format. Its key features are:Styling: A modern, cinematic design with a gradient background, rounded corners, and a subtle border.Content: It displays the full file title, any extracted quality tags (as styled chips), the file size, and a prominent "Download" button.Functionality: The download button, when tapped, will use the url_launcher package to open the download link in the device's external browser.DownloadSection WidgetThis stateful widget manages the process of fetching and displaying the download links for a specific media item.State Management: It calls the DownloadService to fetch the links and manages the UI state (e.g., showing a loading indicator, displaying an error message, or showing the list of downloads).Layout: It arranges the DownloadCard widgets in a responsive grid that adapts to different screen sizes.TVDownloadSection WidgetThis specialized widget is designed exclusively for TV shows to handle season and episode selection.Dropdown Menus: It presents the user with two dropdown menus: one for selecting the season and another for selecting the episode.State Management: When a user selects a season, the episode dropdown automatically updates to show the correct episodes for that season.Integration: It uses the DownloadSection widget internally, passing the TV show's name along with the user-selected season and episode numbers to fetch the relevant links.7. Screen IntegrationThe final step is to integrate these new widgets into your existing media_details_screen.dart.Tab Bar Modification: The DetailsTabBar within the screen should be updated to include a new "Downloads" tab.Conditional Rendering: In the TabBarView, the content for the "Downloads" tab should be rendered conditionally:If the media item is a Movie, it should display the DownloadSection widget.If the media item is a TvShow, it should display the TVDownloadSection widget to allow for season and episode selection.This approach ensures the download functionality is seamlessly integrated into your existing app structure while remaining modular and easy to maintain.
+
+Url to fetch download links:
+<https://backend.xprime.tv/servers/downloader?name=Final+Destination+Bloodlines>
+
+API response:
+{
+"status": "success",
+"query": "How to Train Your Dragon",
+"total_results": 39,
+"results": [
+{
+"title": "How.to.Train.Your.Dragon.The.Hidden.World.2019.REMUX.2160p.10bit.BluRay.UHD.HDR.HEVC.Atmos.DTS-HD.MA.7.1-LEGi0N English.mkv",
+"size": "60.72 GB",
+"download_url": "https://shiny-bird-d62b.5gkwwmjk.workers.dev/?download=83f31b03de70c3751826767331cac570%3Ac8fe2b9fa138e3d5551bb0b3b889fd7e975d6d49e5a59a3a089fbf325c1e6acca6ac2cfe454b4bf24d57050a379192cfe5d301585433d8adfde9f8a0dbd70af3b71dd898bf3f945e06a54f91cc3729ada714bddd406e6cdf2d02880cbb180057745f70bbdf797a018c2e658bbae6be7e81f9150e6459276a20024ec2a5efc9cdfe37c694218134d130dd31e40203aba47d1bda0d65fc054bb8195f721e52a5086572178036bd7b7c04688232998a7d58",
+"file_id": "6c7e3618-93f9-4474-ac18-49dcba4ff987"
+},
+{
+"title": "How.to.Train.Your.Dragon.The.Hidden.World.2019.1080p.3D.BluRay.Half-SBS.x264.DTS-HD.MA.7.1-FGT.mkv",
+"size": "14.53 GB",
+"download_url": "https://shiny-bird-d62b.5gkwwmjk.workers.dev/?download=b85dba9eef7ca1cb7371154321edc526%3Afadbe17055ea3514fae7f782023fb7ab9130fb1225283660530eb4108e5225404bd6e8bcebabd1679d168add0d657dd4c690769d2f2f5c00133cf85e96a386ed3990d126f9cd6ccd779ab67c1d93e583ed3ddf704c956bf5abb2a58aa77a78512fb4274276ff9a28fabeedbd84b13bf8814c39fa6cdee21b259c61fecc3f51513918a60b0556f4dc45ce776d3a36d7e26e32b2c2ac059ffbd5a4b854afbcc5407b32c4aebaaf3a882d1d7259ac057484",
+"file_id": "ff9fe3f7-1122-4f52-9bd4-1aae4093daad"
+},
+{
+"title": "How.to.Train.Your.Dragon.The.Hidden.World.2019.1080p.UHD.BluRay.DD+7.1.HDR.x265-MGs.mkv",
+"size": "9.52 GB",
+"download_url": "https://shiny-bird-d62b.5gkwwmjk.workers.dev/?download=9e5a2157a6bf8c34278fc595e76cde0e%3A6ffeaf1fba994a8f7f7d3caf56ba66922f986c85bd927f093e2f28d0c4e08e0866454ccda19df7791711fe99ecc1dcfbcf64c1817699a9a13386af0ce0ef9d44645e8c2550998e18bf0abfad143a5a7a3952947c444e5d317d1d3f6fe9804dffdb153c0437dad91acac60ac4038a7907de6d4fd714e0330a13668bce3e21c0b7a8082854b2ec12d7da29a3c2c125ab3551f068c5724b408a2fbe2c6d6ffde3a6365a3048ebf6add7d3bcaabf271b8867",
+"file_id": "9c803525-e70a-482c-870c-9ace3321cd57"
+},
+{
+"title": "How.to.Train.Your.Dragon.The.Hidden.World.2019.1080p.3D.BluRay.Half-SBS.x264.TrueHD.7.1.Atmos-FGT.mkv",
+"size": "14.18 GB",
+"download_url": "https://shiny-bird-d62b.5gkwwmjk.workers.dev/?download=de2e9c4b03ce90cb83cef907f030c729%3Ad4a1726a7bd528d61570ce9979c2bcd782d3bece077c8009ffe280df844052a572f6dc51bc73a00f18a28bb1432d6701b6611e8a05095691ce332957cc7a31c4650553d74549e43672d7c23d86466db5599296239d8da12c50dae072e3fa3d6522c831ba3c446bbd06fd7a78c1c7e851fb186a7f5472bdd14c8daba0e7efc7ac0e081050cd10e87a6bfb713b3bd53fa313bbd4e227baff34434eac61a7a64cadd5a974cddb8bf99cd73af41aac374fb7",
+"file_id": "b92d466f-34f1-4c47-9a68-7b4a87f439cd"
+},
+{
+"title": "How.to.Train.Your.Dragon.The.Hidden.World.2019.1080p.3D.BluRay.Half-SBS.DD.7.1.x264-CHC.mkv",
+"size": "14.42 GB",
+"download_url": "https://sparkling-sound-8a68.gusto-gusto-veal.workers.dev/?download=b51757b3a6b5147ec61b120b7d8014b9%3A798045a41ecb24cdfad8fdb7b5219fde847cb115612db59bb1b1a1312fedba9c11cf243f0645ca20a1b85fa5493b721c7c03ec7da1ca148d15fc29fea668b117e9f00de6e2707856571d97e8f9e663087c1f9af768fb152adc534070f3c5aa9308b5179b483d5908973d0ce8c07b78cd7c33ae405fd07064beeb0057b3fd9039616b2aaa0cda075183229942768107517aa370e1a6558c6af051480e6dd92536f30ffbb56ac6497d353ebb36920dfd8c",
+"file_id": "c7b61a94-533d-4f02-84a9-445143162fd0"
+},
+{
+"title": "How to Train Your Dragon The Hidden World 2019 Remux-1080p.mkv",
+"size": "26.62 GB",
+"download_url": "https://scloud.snub-tiptop-half.workers.dev/?download=4dbe4f681e056abb03a2a5d4ac5e8dcc%3A2248cdb6598248ef8580dc54a259b3fb856ffc5b06174d22f2df45dade9cd31e9b8f9e7af0f2c4fd38fb82efbe214018278925a842100b4de3420e6f4f85190b49768c34a0d3c55148b38c8abbbca8b617d001455ce52d6641bfc5c19aadcbe44f738b20042baf1d0be8c9b9cb64986c9f8a410dcfb6a43cf053d4aec07b411af00d43a387af0a87abe2f3c830b105a4dca9efb5e2605ebee5ac4b9cf65dd2aecdbb2d8ea4f57661324840db4ec4f2c8",
+"file_id": "22dc8d6d-af0e-4c1c-a727-b69d6089098e"
+},
+{
+"title": "How.to.Train.Your.Dragon.The.Hidden.World.2019.2160p.BluRay.x265-DEFLATE.mkv",
+"size": "25.90 GB",
+"download_url": "https://scloud.snub-tiptop-half.workers.dev/?download=d8d5a377e920e9528bcfa0d21c29457c%3Acf2ee1dad4abfd9050a0516d89dec645f8a48ed22ccc7cc0c1507890a299b95711f7e04d7475d88bbf39a22a2ae58ff06cafbb9667442eb7fafd2025077b56c396b2f54b459c933670ca222e37e42d8feb1a79e0711b398b51bacf0019c021dc09f7d729be3134430995fdb5ac276637e1ee61cb6a33d902685587458eaa1b24116fb837bef79e909c7b61a0f2ec78c5ba62884d2adb2897b62327761cea19a16202f6d93eefeb9b4ca5e060970d04c4",
+"file_id": "53885778-5160-42a6-9317-44f0f5b8c8a9"
+},
+{
+"title": "www.TamilBlasters.link - How to Train Your Dragon: The Hidden World (2019) 1080p BDRip - [Tamil + Telugu + Hindi + English] - x264 - DDP 5.1 (640kbps) - 3.3GB - Esub.mkv",
+"size": "3.36 GB",
+"download_url": "https://scloud.snub-tiptop-half.workers.dev/?download=d3cbe7b68c70ad7104a556538fcd0914%3A6177ded29609e6a7df2ce5197bb676f8312f6cc08da8a82a30296cc644db4fbf573a937077de9d4d3db5f716c345d3c7c14e5b8437f489096aa5844398bea731c2ef0f4cc6cdcba81badd460eb972848585cb5c8b89e5d024db66d83484a44cfc34f04a5ebd8a2f3bcb6bda4f7d8e83751fc238d2112039399230b12fa1868229f068039712074b1211915c8c9c86b36a1f2144afbf5f59f9e4402fd14508ef0eb370e867a611ec81a96d266b59d07e9",
+"file_id": "c162fc01-ed05-4ff1-bca1-2f2db17f18b1"
+},
+{
+"title": "How.to.Train.Your.Dragon.2010.1080p.BluRay.REMUX.AVC.TrueHD.5.1-UnKn0wn.mkv",
+"size": "19.26 GB",
+"download_url": "https://shiny-bird-d62b.5gkwwmjk.workers.dev/?download=2d618e462c599777c7bf5a215798b885%3A6b7635d931d26446e1bc8e1968b5d0e8626ed7b9b4a2dae8129e22abde0fac6ca0554e1bf0891a1c08930c4ff7868e86026888e0ad9b58f868ace6e6b3e913a730fd6660b19dea0f14bdfc7b1da2c379980ed8d19c7524ec8befbbbcd888dbff212db761c218d53894a7c0c0869ed54426d5bf4155968fd8838ecd760c3f1cd45a5e15205bcec18cf41ae182a067de7dab525a0d12ad96bc02b9a49ea2419ca91261a72518f9303c9fce1683b6ecd44e",
+"file_id": "cdc7602f-b6bf-4aed-b5be-3c1913d09bac"
+},
+{
+"title": "How.to.Train.Your.Dragon.2010.1080p.AMZN.WEB-DL.DDP.5.1.H.264-PiRaTeS.mkv",
+"size": "5.72 GB",
+"download_url": "https://scloud.snub-tiptop-half.workers.dev/?download=c6b963f7be129705ea1a9b3f1bd2875b%3A6a3abb41bdc075bc4f10ebc8a394f3d8db4c73fdace9de71ee931c40d244eef9560faf5023d947ae6e28a711305ce2c98c3aad72536ac58261a6001ba5345dfc61ff24d2f03e8cc58ea4d68e5411ee041b0c863267dd9b4cccf0ddb7ce02a69d3ca3c560412091cedc7507d4ab12e02a7ed8e73314f0fcd9442170595e01d8860990f08ffdaa59eb5c4a6214d64118633cf68e5f10ffe94d7cbcaf073b87b248297dd497f1d3f7b5c58d3c556edd3806",
+"file_id": "ef72a5bc-4da1-4d35-a09c-11b232149fdb"
+},
+{
+"title": "How.to.Train.Your.Dragon.2.2014.1080p.AMZN.WEB-DL.DDP.5.1.H.264-PiRaTeS.mkv",
+"size": "6.40 GB",
+"download_url": "https://shiny-bird-d62b.5gkwwmjk.workers.dev/?download=875c719a969ec6d994a3d0b271263abf%3A6b0341ca1d48412cba8c3d67ba839add0eeada02782dc6cc7ce07747fa5ddde65a931dca21dee0039f72b6f73a0881306064631b105dc5c04fc89b5709648141fb9d531f276bdf7566e1f21b62173753d4e20af79b85e4afc20d2ca428d386fe181cb7a137ee8264b3d5bb2f44c4ecf31b31fbdbdb485090cd8ae0b5d7f72a567a476389659d9941af7439f7fc65415da25ade1ed53a70375c430333a3615e6ae759d2b5f9929199ab9e205315be38d8",
+"file_id": "14f34127-b25b-40b2-a3a8-ae4f62dacb37"
+},
+{
+"title": "How.to.Train.Your.Dragon.2.2014.1080p.HMAX.WEB-DL.H264.DDP2.0.PTG.mkv",
+"size": "5.78 GB",
+"download_url": "https://sparkling-sound-8a68.gusto-gusto-veal.workers.dev/?download=62e2f5d957eeb5195810a5510c04d978%3Ac3fbb2e1f77cd60013276662e3a08397f703bc53e6939ed02bc94c69a2ca4a6279c4fb7ef7ad2e2ae0598618bd72a8d6cbb95c270183f8393ebfa7edeaeca864353f4105bd9424ba13d71f84c7011f15d102b34f0423cb2f312e7a5708c222e882f8f3b56cea047271eebe4d4e3ca15112cc2c0689171c772be01ec33e3e63b9e2e7a1be604bc816999ec8fc6c6f3ee9cad1e3cf7f94047108a7b6972f41f509941e430ad571e9f21bfb77788b81488f",
+"file_id": "e6de8721-61b9-4053-948b-6c71f0c8014a"
+},
+{
+"title": "How_to_Train_Your_Dragon_2010_1080p_10bit_Bluray_x265_HEVC_Org_BD.mkv",
+"size": "3.48 GB",
+"download_url": "https://sparkling-sound-8a68.gusto-gusto-veal.workers.dev/?download=34629f6bb34272c0f7e6de828b474476%3A95d18acb87240cad5198ec40ba0d34ed6b9a25e6a8e3b769a61898a640840123737d31ecd5fccb477748bd36c2475b8d0412b3c5db68c576939e45998983dcabef9684128b9f2e64a62e193f5660415bbbd94c1ea0769d2d677a25c804b94e7d4485268c6865931c10cc37cb022ee0608bb2ed51d6f1c823ec6317bb0078e853a1e0c580ae095530294c7e04b23e9d6acbbc72c16d0a07c4c9e7b7602e7c1071c9cfa60687e5419f46463da71737c9e5",
+"file_id": "f42be08f-0751-4443-bbb7-c488126feca2"
+},
+{
+"title": "How.to.Train.Your.Dragon.2.2014.1080p.BluRay.DDP.5.1.H.265.-iVy.mkv",
+"size": "2.58 GB",
+"download_url": "https://shiny-bird-d62b.5gkwwmjk.workers.dev/?download=1127cf55597b639892a3a326a1aab76e%3A1e50c1cca4e21da64218660cbfb3617b425355a75da9933c97a480ad6c47a5a86bc9d42a6fa40c4fef9f2d3638d1d0462eb18e57f01725a67a25fac858a62659f1f29874cd84776d0165e1226d3504692c0dcf779d46269f70832388ac988ba0a0d7c5c84b350a1814d28d7dbdb0f86e51341fdcc78d01e78f0259ef7bc0aa09581b162d4072eaa5551c92cf1edce3e53403f18c998a1c4c6dde9d1151fb5604860894e1f82fcf90b61213ca5e6975ca",
+"file_id": "25e57e09-bf08-4989-a4be-123bb773afe6"
+},
+{
+"title": "How.to.Train.Your.Dragon.2010.1080p.BRRip.DDP.5.1.H.265.-iVy.mkv",
+"size": "3.48 GB",
+"download_url": "https://scloud.snub-tiptop-half.workers.dev/?download=12bfee4199ad4ac24bcf2a06cf9fefef%3A8aef827fd570e4fafe5517d7a23a8a9b472186a56d55353f3b7df9f5aa60ab84872f5f49547ab758ff8404c511f93c8d09578a1b9f44fbe178f4536b1c734f808ca545434241b52676185599a6b6ba48d49e9fa042a1ea96825516e1ca663287a536f5d6eb408bc94515d7663c91b57ac201fc51ea2a1a429f1fdc918ce8d2f62bd109cf1aa72f770ac4ca04d9c1e56c581001aaa81ab2e70d40d69bceb56b8af322c8c360c762325bf8b9bf0ac043b2",
+"file_id": "a2a989a7-4e4a-4e74-a46f-86c53f2a7260"
+},
+{
+"title": "How_to_Train_Your_Dragon_2-2014-2160p_UHD_BluRay_x265_DV_HDR10+_DDP_7.1_English-DarQ_HONE.mkv",
+"size": "13.50 GB",
+"download_url": "https://sparkling-sound-8a68.gusto-gusto-veal.workers.dev/?download=0de7b16172e00687aeb2e26a081142a3%3A141b92c3a40d8d4ea7f7a6b2464748656b276e7e8cdfb87049595c35621eff91109d4da9137b6d2e38d08636f29b2fab73e21dc363f5824745de1d9c3bf0302563519b2a4a9089d49f8a228684fd17d613db47b07843fbaed253077a5ecf3684d928e31707a44dc6a453df0cad009cb8b69d19c979d1b2d4964d819453abfe44ad8c734238d8fa3ebe9b0ce759a3063b9f70b85c31e040d5d20479999d374f8e4378da3a3b08ba988ec4b1edecfe5a96",
+"file_id": "289cb4e6-155d-4a8f-af06-53238a8f00a6"
+},
+{
+"title": "How to Train Your Dragon 2 (2014) {imdb-tt1646971}.mkv",
+"size": "31.77 GB",
+"download_url": "https://shiny-bird-d62b.5gkwwmjk.workers.dev/?download=e9b3f4772c9547a8d7331a4d1c5da58e%3Ae0b751755584f7ab8ab60e33fefbecd755ae32c7aacc2a86d1907c8e1f5fa4ba81686bfdf31f7387e21c1ac1e96c730575d20dfe441cfb70a4555b5aa081f12ba2bb48d2c99121b8a58884544391f941ef5b7cb491ab2c3f4bc93d7bbd0fb35bc718abd702f0701ddae5fbfd7379a820d9d657b2766b3187e6df037aaf405a198d594dc82d34e087fbb4c2d16a2eea26dedaa5207c0c2abdb385045c7560c6aa265db37ecb9b6b6fe31e097695bf334b",
+"file_id": "a8d15b40-9477-4ca3-9e2b-ef62604291c9"
+},
+{
+"title": "How.To.Train.Your.Dragon.2010.2160p.UHD.BluRay.Remux.HDR.HEVC.DTS-X-PmP-xpost.mkv",
+"size": "34.95 GB",
+"download_url": "https://sparkling-sound-8a68.gusto-gusto-veal.workers.dev/?download=1f4e4f3f49f5cc4e54646b600e9e67a4%3A1aae410d6c34c418d151e4369025a5844cc6b4b9dfdcd7fb29d2d55328581305c1c973a6a83fb6ec0dee2d1af347d868934b1c38c56563109ce91619d6ee767663f38cea1f79bee984c629e363937dc123d1bf7cb84780e4473ae3964f0f7f1160fb6ea5413cf909d960e0f9be952c6aad71985c2b08d7e9aa3d52a4497384589f2b8d288762db763978c658aff3879b8c323d8d65f26302f4d67dd14fc3334d0379bad3583bb6bbb56dff210198e1ad",
+"file_id": "784c8e63-bcb9-42f9-8893-ba69064783fe"
+},
+{
+"title": "How.to.Train.Your.Dragon.The.Hidden.World.2019.BluRay.1080p.TrueHD.Atmos.7.1.AVC.REMUX-FraMeSToR.mkv",
+"size": "23.54 GB",
+"download_url": "https://shiny-bird-d62b.5gkwwmjk.workers.dev/?download=c64fd220b2c4c3be626c8d3a8ceea9ec%3Ab3b3b9ea7200d82182f7b061e50b0f93a891a5af68180d09961a37be1597c52cb26cc986ec684118047d6fe89de3e687552d9fabf3e1990d40899db9e1c20cfca9f617d06626f40558932c4952e95f6fea95d1b51889665115615e4bd9dbbb494548693904c0ab4a8f353e3ac8b7640cf171faec2d5e69f884a0decdc8d5b5c381c32bb281126f85b38c068ce10dbecc5e4ced58ad40afafb81d456d08b04a9d2bb605efb342f62a48ffc6c1cadb52c6",
+"file_id": "cce600ac-845d-4ae6-9fde-808c9d389caa"
+},
+{
+"title": "How.To.Train.Your.Dragon.2010.Bluray.1080p.DTS.5.1.x264.dxva-FraMeSToR.mkv",
+"size": "11.57 GB",
+"download_url": "https://sparkling-sound-8a68.gusto-gusto-veal.workers.dev/?download=ed5a644203b64263035c1a95dccde9c2%3A9dc38315607c9870a398c50a2ea0151660ecb2676b350c2e038839a5eab4e4f2987a28e7744c039dc79225f63c3b95647b0ba6c9480bb683343b64e88b4a14fe31f6946d6ca778596daf3e88199824e70340663764de907d8ebcae84a8d4a1f4670e12c2cffd633663a65981c42ff7b76a6986f7c5d872c9e1600dd1a8d397ea2fec0b2eb94c816469987e5ad0ed1e1a4b09553f96aa5a5e45f3d1c6459603a7c13a90a9c00410669797bb71e18ef6bf",
+"file_id": "9b4a849e-530f-4ae5-a6e4-995e0d637fa5"
+},
+{
+"title": "How.to.Train.Your.Dragon.2.2014.1080p.BluRay.DTS-ES.x264-NTb.mkv",
+"size": "10.32 GB",
+"download_url": "https://sparkling-sound-8a68.gusto-gusto-veal.workers.dev/?download=45a0cd471c4f4971ca19f048eda55052%3Acb93cf6d79caaba3e1f7a276e327901621fec14b1ec8e39a4cbe92ec89ace003d043287b8d2152d27e62c1d4031bb76841fda7f2dc6d7614ecb7d0baed68ce6e223d98753f38686d573984d6f57c535986b55cf6691690bf9e2d785d17bec337dd7525e58cc9ee5914db6e64779c4cf90ed349f116ef8ae0d42be7fd7a35da93342ade70059cf57532da90da3dbb00bd04c011ab7f3ee4802773462db2d4760203088889f436c261e0e08612f1063b61",
+"file_id": "58b7f1ef-8ec3-4ed4-bcd3-c8e629bba3ef"
+},
+{
+"title": "How.to.Train.Your.Dragon.2010.1080p.BluRay.[Tam+Tel]DDP5.1+[Eng-DTS5.1].H.264-Monkey-D-Luffy.mkv",
+"size": "8.74 GB",
+"download_url": "https://scloud.snub-tiptop-half.workers.dev/?download=5e23ed9c1ce83298c50186333144bffb%3Afcb097a759f5b69752a30ad980123dc7a10984cab3fb884b2412da5f77342260128b76cb32055244ad857494375cbf1bf8539c1f0ecf45108c18c4516c00f629526181f089d993aaf35489e5d46a641c82a483c9dc6010411df9a1c4fd3c6832d3df4100a4dfec427ef7ca63365e92f7c28d01e6213c5dc06877fab22ba44060d1227f442d1d5e78486d0fd7e52ebf46a49fcb0a4cfafca313326beea2dbd6847cb4b436c006efae24c08550d03a5533",
+"file_id": "3cb2bbcd-3470-4969-8842-9994cd6fb187"
+},
+{
+"title": "www.1TamilBlasters.link - How to Train Your Dragon 2 (2014) 1080p BDRip - [Tamil + Telugu + Hindi + English] - x264 - DDP 5.1 (640kbps) - 3.3GB - Esub.mkv",
+"size": "3.29 GB",
+"download_url": "https://scloud.snub-tiptop-half.workers.dev/?download=82c0637421f93196c9ab22902fce218e%3A86a35cfda6fa3de185fd015f8ea76d8cd2305dc1acb238b8bbb60970c3f0ef304ec6ffc92d87b88792b71c4836f1450692f1853330003e904ee3f5d0a90462498f0ee3d4e3e57931b966931706bb5675f2a637751a7b833e3161689536ea2cb0c26c1406ab8b623f9c4842c5604c901e0293bfa7a12a803639e2785d5ad15b31ad434477780f3b99d56648f7c5bbc415520f5f4a31ff8fc4b5d2893fc4b774b640c0c909eb70c3e4b212b7dc12e5982a",
+"file_id": "a6fb4745-3cb9-455b-a9ec-32c78ed1b7d6"
+},
+{
+"title": "www.1TamilBlasters.link - How to Train Your Dragon (2010) 1080p Bluray - [Tamil + Telugu + Hindi + [English - DTS 5.1 (1509Kbps)] - x264 - DDP 5.1 (640kbps) - 9GB - Esub.mkv",
+"size": "9.08 GB",
+"download_url": "https://sparkling-sound-8a68.gusto-gusto-veal.workers.dev/?download=2eb03a8865e653245f58d464898d5bf2%3Af20194aea406efffdbc570d708cb22f989a74a3df8f2f7c6535111d7492693c29860fca131d827aaf376ede152daa6c9aaec7791c0f9b84ebdce4a6d759b762e169476a958b206174c5a89a5381c9b500fc73d21914ea0c9abf63bbee709f94e53e25f4ccd280ac128364b08d4cdf333b971490e36a2f5c847bf7227f09af6dd78c857f33b68e3850d5a0a115b06cdffd6c01b14c4924d1ab2e52e1a1e7fb2004fcdd83b7d65743545b3befc3697fd91",
+"file_id": "528d9ac8-90d3-4118-8695-b2ae86dbe367"
+},
+{
+"title": "How.to.Train.Your.Dragon.2.2014.1080p.PCOK.WEB-DL.DDP.5.1.H.264-PiRaTeS.mkv",
+"size": "5.68 GB",
+"download_url": "https://sparkling-sound-8a68.gusto-gusto-veal.workers.dev/?download=e9622566a20fdd64c04fc95c7e43831e%3A7035589df67006646b842d499d71c85e294c3b3d7e49908359be7a8f7525136fe103df3a872dbf06e6f6cdf84c42af32ebb57971d510f5774d76b42f1b1c82f26824121fc210ee5b91b2c97ff41d51f15123fa331d5bf31fe5790264df76172e87257b85186ce19be98180f00032e3d3fb6e12157becd9605d589ad3fcb7f14c3714ad011921c971127f85944ae2ed0d8d3798e6e6cb7f5ed8e1fb638c4ca91e6f6b6e5bbac58e4d471af50e3e8c6aa9",
+"file_id": "1a373569-21db-4871-a9be-6c059e04f85c"
+},
+{
+"title": "177.How.to.Train.Your.Dragon.2010.BluRay.1080p.x265.10bit.4Audio.MNHD-FRDS.mkv",
+"size": "5.71 GB",
+"download_url": "https://shiny-bird-d62b.5gkwwmjk.workers.dev/?download=e314307587b530d4f8ab85250668c7ce%3Acea4ca09389309d6cb46c6cb316e4f2305f81327ff261246581f81c81b1b075f82e1f3011db998f865fefc180987181690631025697d222f7b5cd3aad179c25f706bcdb6659fb0bbf1e1bae046fe3968f5700e238c5b137fc2224473fc5b7be64859e4c48c5910ae793b0e3c7775bcbb33f29f3d20ddbcc99ffb43f47cd7faed16478f2570c1096d03ebc0dadba09fe1956b56cd7e2154ad7c2027b73f3c1758eeb1a5f2353bb50f5fb755eba7fb7913",
+"file_id": "dc3f786a-6e10-4d94-ad99-b72595670f83"
+},
+{
+"title": "How.to.Train.Your.Dragon.2.2014.2160p.BluRay.x265-IAMABLE.mkv",
+"size": "10.27 GB",
+"download_url": "https://sparkling-sound-8a68.gusto-gusto-veal.workers.dev/?download=58fd4c13868d9a2474df81fbbf53f283%3Adae9c61ea29e8d6234f6e845ad9f2c359d06cbed6dbc9001b54170abf36049023068fd05f6cda5958270ef45800faa6af78cebcfee8dae80ecf1476a291a85f775a8c2de7892991fde9f9587df228a1c7e6ea2510160774ae624361cfe7f42c24e0eef87cfb39536a0e6bee8b60a987f4afcefb4acfe3b7f98b648689c15308194e6789dda57ad9b55563c8de50f204eaeb5c20a9c24b396b2fa47e5dad5cf21af7abdd50bb0d6550c07c309abc5cdec",
+"file_id": "e16416e7-6c8c-4941-bfdc-cc899fbdaec4"
+},
+{
+"title": "How.to.Train.Your.Dragon.2010.2160p.BluRay.x265-IAMABLE.mkv",
+"size": "9.44 GB",
+"download_url": "https://sparkling-sound-8a68.gusto-gusto-veal.workers.dev/?download=b1d64d5cb9151491705ca8684b6db90e%3Adc9042471f25bb3c6920084734af2000cbce715e1df76125250a94f5b9aa31b55339f4d9f10a48d26d720fd812b035eb101dde4f7d32d5af0911c29b6bc48fa50f5bf70ad8a5b69823a871dc2dfbdcfcf6bea0d8209be77d3a60b42980d563275f72de8cd4023ec38e510368da9971818636939cf1a6d72db92f2b871d3eff887e84e5dbe3f14458c483057ca91f8994d2069bcf559662495a6fcecd719df9f089f08930627318869f69d209463e2f87",
+"file_id": "48b1868e-9b94-44ed-82d1-ab62a5c98599"
+},
+{
+"title": "How to Train Your Dragon (2010) {imdb-tt0892769}.mkv",
+"size": "38.55 GB",
+"download_url": "https://sparkling-sound-8a68.gusto-gusto-veal.workers.dev/?download=714cfdf6d51a3c9c4f70e1acef509c1e%3Afdb8490193011f5f5a76a18f27a120dde776f0d590b054ea2ebffe1ba29a8057b9b8f3e2e56001d9be96fe3c8ad0ff68ed50386116d2158244cef41db77dac21611932cecb391c5be897f33b2c5cd31f9fc7dd18a04d70dfd13336a50c5b2287207d314566d2925bcace93822d17a1ad84392206f9ac259e282761a099c729cebbfb944631d158d0249dc6411d1640743bd514de77c10cd3837b039fec455a0ef7d1817013329b2ba6e32372b5233855",
+"file_id": "525bb2f5-5fa4-4525-8a76-5299dec41057"
+},
+{
+"title": "How.to.Train.Your.Dragon.2010.1080p.UHD.BluRay.DTS.5.1.HDR.x265-JM.mkv",
+"size": "9.50 GB",
+"download_url": "https://shiny-bird-d62b.5gkwwmjk.workers.dev/?download=2b41065f6fbcea8fd1604bc1c854f7c2%3A7567ea416f460d6b7076ffaaa171900efa73241a0a6b5b277b30f912c725a6f5a9911e8fd9f77729e1de86b6f806af25feb9a54e2ca71b487e783c599c064bcf047c1cafa4484153cf10b8107d5456ef192af2a0f4784209a8a1e7d92e3b9b9d113547b3a4e3f425e138ba53666e41e70c0ef716bd15b348f4e26b2581227106073a692d18aa3d45489972065b51ea721b8288c7db77ef7e1f39caaa5928b1d8b91a52fc1c4bd064fd67aa408b97f5e7",
+"file_id": "aaa83243-aafa-4855-87c9-e93791208ad7"
+},
+{
+"title": "How.to.Train.Your.Dragon.2.2014.1080p.UHD.BluRay.DTS.5.1.HDR.x265-JM.mkv",
+"size": "11.34 GB",
+"download_url": "https://sparkling-sound-8a68.gusto-gusto-veal.workers.dev/?download=e2cb56155afd7bb414e7801b4451c3e3%3A7b663e3ee488b1601295ab41db543b0ef7130662143bc0c317ac56ee0773cdd090713016b6fe6c7af8d7c5509b55ad461726ff8ca8ab70bfe96405433e92b673be7b980d3245aef052a8139da05058ab6260d922e2b549660aa9f1b0f3a100382e8ef310e9ad78004990c84aef6c8ef3bb9133bc468d02c59ea229c6d5426041b95bc01ed38feda42dc4f64d3c153dac94c620669322573efbc155db95fd5ae526aaa8966ff67cd75f4ed3923a376c91",
+"file_id": "edbdbb97-56e8-4ec6-84bc-463c030a0a79"
+},
+{
+"title": "How.to.Train.Your.Dragon.2.2014.BluRay.1080p.DTS-HD.MA.7.1.x264.dxva-FraMeSToR.mkv",
+"size": "8.92 GB",
+"download_url": "https://scloud.snub-tiptop-half.workers.dev/?download=d176a584d520c00c51b53f94f0a9fb78%3A8f7c644107cebc4bd67feed7c1ea9118bba6cfe318489ff557c768d62e23da14f8890df610fe2ad80052e297d32af3960a9d22adef882c158435e9b5d429f4601967caa2b635ed3f151745757ee7766d4483597f3a5323261d06dc6e18c7219dc5087e4154b34a1da56f3eb486bfcac96a7b4cf77d7e44b256fb189bab3e42015c3d446024adce4e32e70ed41fcc1caa87e29510ce35488d434a9fe3baee4ed6b88d206a9c4f58dd2fdeaf9f6249d964",
+"file_id": "002d4183-5d8f-4946-8a46-7690c80406f8"
+},
+{
+"title": "How.to.Train.Your.Dragon.2.2014.UHD.BluRay.2160p.DTS-X.7.1.HEVC.REMUX-FraMeSToR-xpost.mkv",
+"size": "31.77 GB",
+"download_url": "https://shiny-bird-d62b.5gkwwmjk.workers.dev/?download=ace6afe6f5362af84d571cada89fa462%3Aef34163feb16811f231ac5571c78688d598132d380dc0623b9d76b697d6107ddf4022273de4ca562a94b7841db632a98b46a9f7a529822512a4bf62b5eb95c48a3540a5c9b41aca767c59ed7fbdff9d0c1f0c66f5e13ed18327486b95a11fe4995944543e09220ecfd7864017e80dcf7ead61d2c70097ae8473693b85e0f21672188c7e2906bfcd4d47ed4af92d5db64fcccf46603dcc1c76205db34cd9098b0ea50a482b1591be35484cefa10d79639",
+"file_id": "74df8475-77ca-41fc-8ea3-511812f87c38"
+},
+{
+"title": "How.To.Train.Your.Dragon.1080p.Bluray.DTS-x264-HDxT.mkv",
+"size": "7.56 GB",
+"download_url": "https://sparkling-sound-8a68.gusto-gusto-veal.workers.dev/?download=e0a65b8c0f854fb21250dc9804679523%3A278140ecbab4410f662eddbc10d267c4e228cc6a86ea4fbe4d84ad48e0c78200b46a9c6f2f0cd7923467c85f3cfba449852196fd4aa4ca6fe7cf5f460663f87442b72a1af208317932ecc046b42a1cd7f5a97ad3dfb9611a224cf053d969565a8a988a2cfe82d0afc63cedf38733c8f74306f282e652fb9a2d744d78aa2f5b6be564c3da972c0d8eb70cc536d89a68d772cad951d9be8b7b50dcba32b4df260f2dcda11796ebdfcd531150ab3d14b4e0",
+"file_id": "a55452ee-4d35-497b-8d57-0fe5c5f838ea"
+},
+{
+"title": "How.to.Train.Your.Dragon.The.Hidden.World.2019.1080p.BluRay.DDP7.1.x264-Geek.mkv",
+"size": "14.57 GB",
+"download_url": "https://scloud.snub-tiptop-half.workers.dev/?download=a96ccd7d401ff725ab64e3ec21318c73%3Aaf1b75dfd9762dab0825685987347d0c61b2fb0eeda968e553a1a6af5c8ca1fc2d42d4a0a5fe8c214d72978bab978eaad154e784edbe8b7c5804b22eddf05c44ce75bed7e8ab9f314afc3ce657c061eafa496c9d718e663e7197120932c073423912cf770e0cf60e2692fd73aeac0e625e3df29e951e25613bc36f5c1577d44ecae2e658667be77d2927e87ef8ae193790f55fc35894b53271899422b1f8c878290dbf3f7dac9e14926cb581fdeb0e4c",
+"file_id": "212c2958-062b-44da-818f-0ebf138deb96"
+},
+{
+"title": "How.to.Train.Your.Dragon.2010.1080p.MAX.WEB-DL.DDP.5.1.H.265-PiRaTeS.mkv",
+"size": "2.19 GB",
+"download_url": "https://scloud.snub-tiptop-half.workers.dev/?download=5ef3d3f6fd3db579c59577453f23ec9a%3Adc405e4a489aaeee3d3f09504b82bb10c769ae88c4a2c57f5f2711f8745fdac41a10ad449d7b39c64b8546f0d447450936ef58a08867b3b0412b0f1c42851d74f3330fd7717ad8caaa13dd27aa83a9e9ab23f1bf811d73bc9cd3d7f930ed558774fb53a90ebca06b3bc8a19bc101f5ee14dd25927549bf0243e95ae3b3842bac7b3954d0f0c1f42ddaac17dbe6f0e603b270dea6fa72262a426ef23b7e2398313fab778482931f8675cf24e9638941f1",
+"file_id": "86467645-bea7-47cf-a04e-026419cdb29f"
+},
+{
+"title": "How.to.Train.Your.Dragon.2-2014-2160p.UHD.BluRay.x265.DV.HDR10.DDP.7.1.English-DarQ.HONE.mkv",
+"size": "13.50 GB",
+"download_url": "https://shiny-bird-d62b.5gkwwmjk.workers.dev/?download=1767b8b38b36c9d7c2b1c53199cf60af%3Ad42c4b4dea194e230243e97b347bf6a75a386a42c3127441d48743cd977de1cafd26113a3a18b7ade7b365c13ea7f70cd42d442d0391f86e94dea51d809fe06f1f2eb3323dc488496ad442c25397585738191c9f6bee25ecd9558de2fab0b613e859810591ccb8e8fabbee689524363a023c0eae331310e3bfa03fb74c60001a499429fc8a73ac5bb43ba5896aee45257acffc5c35cabb721292f3e4a91db7f6d87566915a148678d963a0a9aec0a6c2",
+"file_id": "35c2408c-68cb-4826-8f1f-d865f984bf0d"
+},
+{
+"title": "How_to_Train_Your_Dragon-2010-1080p_BluRay_x265_SDR_DDP_7.1_English-DarQ_HONE.mkv",
+"size": "4.86 GB",
+"download_url": "https://shiny-bird-d62b.5gkwwmjk.workers.dev/?download=0d552d4f36babbd1358ec2394dbe09f9%3Adcaf23ba3d98be9be22c26c69f1021dda9cfe55fb4ee48664e7126a68ddbd07a24b5b2ce79b3b022d2971b41c44bbfafe572429d7a0a9d9aadbf0d0f0760531656cd4241ca8d8767783dd24608c4aad47f1d6c1b4e093e1059831d4c9ef5dee5b2ec380377d2c6308d307e3c680397febc9f37caff00e73e4753513a8e4cc2c6282a9509b94197ffa843b0e6a8d46bdd1f9f03bffb01509306e95ae929bb8240c1b3580866de5eafc30d2a2d18cca602",
+"file_id": "3d0a225e-939f-4c1b-8b0a-016943ea574e"
+},
+{
+"title": "Salinan How.to.Train.Your.Dragon.2010.1080p.MAX.WEB-DL.DDP5.1.EN-ID.H.264-S3CR3T.mkv",
+"size": "3.46 GB",
+"download_url": "https://shiny-bird-d62b.5gkwwmjk.workers.dev/?download=7507a9ffe3bb144f8f0a78ce05682816%3A9b7110a540f35416b056140fd00a72b0ecf8543607db4542dd5fc6df7441442fd681ca9e9bf2b8ba515923d82b5781c2f9fef4d19dbfbd4fd893b7a39cbd94f7e3447ece1c8f0b63802183dbb52f957e738eb4884a8eef681fa40194b5cd35b2b29d687facd2fcafa9615dc13f09d30d26f3916678b6861cfbbb35df99e2971343774d29285ed84565b9be84225dad50ba84e8ea6b60a3149924b8bd9df1d7bca0096ca38be4bbd32f82fa7bed5ade28",
+"file_id": "5d987f51-8ce6-48bf-aa23-9919820a99eb"
+}
+],
+"response_time_ms": 5984
+}

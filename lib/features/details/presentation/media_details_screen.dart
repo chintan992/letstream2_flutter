@@ -12,6 +12,8 @@ import 'widgets/details_tab_bar.dart';
 import 'widgets/media_details_sliver_app_bar.dart';
 import 'widgets/media_metadata.dart';
 import 'widgets/reviews_tab.dart';
+import '../../downloads/presentation/widgets/download_section.dart';
+import '../../downloads/presentation/widgets/tv_download_section.dart';
 
 class MediaDetailsScreen extends ConsumerStatefulWidget {
   final String mediaType;
@@ -148,11 +150,26 @@ class _MediaDetailsScreenState extends ConsumerState<MediaDetailsScreen>
               ),
               CastTab(mediaType: widget.mediaType, mediaId: widget.mediaId),
               ReviewsTab(mediaType: widget.mediaType, mediaId: widget.mediaId),
-              const Center(child: Text('Downloads Tab', style: TextStyle(color: Colors.white))),
+              _buildDownloadsTab(),
             ],
           ),
         ),
       ],
     );
+  }
+
+  Widget _buildDownloadsTab() {
+    final isMovie = widget.mediaType == 'movie';
+    
+    if (isMovie) {
+      return DownloadSection(movieName: _mediaDetails.title);
+    } else {
+      // For TV shows, pass the show name and number of seasons
+      final numberOfSeasons = _mediaDetails.numberOfSeasons ?? 1;
+      return TVDownloadSection(
+        showName: _mediaDetails.title,
+        numberOfSeasons: numberOfSeasons,
+      );
+    }
   }
 }
