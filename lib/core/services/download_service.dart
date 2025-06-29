@@ -72,7 +72,7 @@ class DownloadService {
       }
     } catch (e) {
       // If there's an error fetching from the proxy, use the fallback
-      print('Error fetching base URL from proxy: $e');
+      // print('Error fetching base URL from proxy: $e');
     }
     
     return _fallbackBaseUrl;
