@@ -45,3 +45,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+
+# planning
+# This file is used to ignore files related to planning and project management
+# that are not relevant to the codebase or should not be shared with others.
+# Ignore planning documents
+plan/

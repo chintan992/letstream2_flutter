@@ -123,26 +123,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          Column(
-            children: [
-              if (_isLoading && _featuredMovie == null)
-                const HeroBannerShimmer()
-              else if (_featuredMovie != null)
-                HeroBanner(
-                  media: _featuredMovie,
-                  onPlayPressed: _handlePlayPress,
-                  onDetailsPressed: () => _navigateToDetails(_featuredMovie),
-                ),
-              Expanded(
-                child: HomeSections(
-                  scrollController: _scrollController,
-                  isLoading: _isLoading,
-                  trendingMovies: _trendingMovies,
-                  onMovieTap: _navigateToDetails,
-                  onLoadMore: _loadMoreTrending,
-                ),
+          NotificationListener<ScrollNotification>(
+            onNotification: (notification) {
+              if (notification is ScrollEndNotification &&
+                  notification.metrics.pixels >= notification.metrics.maxScrollExtent * 0.8) {
+                _loadMoreTrending();
+              }
+              return false;
+            },
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              child: Column(
+                children: [
+                  if (_isLoading && _featuredMovie == null)
+                    const HeroBannerShimmer()
+                  else if (_featuredMovie != null)
+                    HeroBanner(
+                      media: _featuredMovie,
+                      onPlayPressed: _handlePlayPress,
+                      onDetailsPressed: () => _navigateToDetails(_featuredMovie),
+                    ),
+                  HomeSections(
+                    scrollController: _scrollController,
+                    isLoading: _isLoading,
+                    trendingMovies: _trendingMovies,
+                    onMovieTap: _navigateToDetails,
+                    onLoadMore: _loadMoreTrending,
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
           const Positioned(
             top: 0,

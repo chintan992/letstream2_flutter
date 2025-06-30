@@ -10,7 +10,8 @@ import 'top_rated_section.dart';
 class HomeSections extends ConsumerWidget {
   final ScrollController scrollController;
   final bool isLoading;
-  final List<Movie> trendingMovies;  final Function(dynamic) onMovieTap;
+  final List<Movie> trendingMovies;
+  final Function(dynamic) onMovieTap;
   final VoidCallback onLoadMore;
 
   const HomeSections({
@@ -24,19 +25,7 @@ class HomeSections extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return NotificationListener<ScrollNotification>(
-      onNotification: (notification) {
-        if (notification is ScrollEndNotification &&
-            notification.metrics.pixels >= notification.metrics.maxScrollExtent * 0.8) {
-          onLoadMore();
-        }
-        return false;
-      },
-      child: CustomScrollView(
-        controller: scrollController,
-        slivers: [
-          SliverToBoxAdapter(
-            child: Column(
+    return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [                TrendingSection(
                   title: 'Trending Now',
@@ -50,10 +39,6 @@ class HomeSections extends ConsumerWidget {
                 const GenreSection(),
                 const SizedBox(height: 20),
               ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

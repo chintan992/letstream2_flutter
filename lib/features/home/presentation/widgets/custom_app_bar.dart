@@ -58,7 +58,7 @@ class _CustomAppBarState extends State<CustomAppBar> with SingleTickerProviderSt
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black87.withValues(red: 0, green: 0, blue: 0, alpha: 178),
+      barrierColor: Colors.black87.withOpacity(0.7),
       transitionAnimationController: _menuController,
       builder: (context) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -93,6 +93,10 @@ class _CustomAppBarState extends State<CustomAppBar> with SingleTickerProviderSt
               }),
               _buildMenuItem(Icons.favorite, 'Favorites', () {
                 context.go('/favorites');
+                Navigator.pop(context);
+              }),
+              _buildMenuItem(Icons.account_circle, 'Profile', () {
+                context.go('/profile');
                 Navigator.pop(context);
               }),
               const SizedBox(height: 20),
@@ -137,7 +141,7 @@ class _CustomAppBarState extends State<CustomAppBar> with SingleTickerProviderSt
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.black.withValues(alpha: 0.7 * scrollProgress),
+            Colors.black.withOpacity(0.7 * scrollProgress),
             Colors.transparent,
           ],
         ),
@@ -173,6 +177,11 @@ class _CustomAppBarState extends State<CustomAppBar> with SingleTickerProviderSt
               IconButton(
                 icon: const Icon(Icons.search),
                 onPressed: () => context.push('/search'),
+              ),
+// Profile
+              IconButton(
+                icon: const Icon(Icons.account_circle),
+                onPressed: () => context.push('/profile'),
               ),
               // Menu
               IconButton(

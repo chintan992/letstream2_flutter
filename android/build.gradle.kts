@@ -5,6 +5,9 @@ allprojects {
     }
 }
 
+// Set flutter.minSdkVersion globally for all modules
+extra["flutter.minSdkVersion"] = 23
+
 val newBuildDir: Directory = rootProject.layout.buildDirectory.dir("../../build").get()
 rootProject.layout.buildDirectory.value(newBuildDir)
 

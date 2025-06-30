@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1080273996839",
+    "project_id": "lets-stream-c09e3",
+    "storage_bucket": "lets-stream-c09e3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1080273996839:android:474376ff255d817df91202",
+        "android_client_info": {
+          "package_name": "com.example.letsstream_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1080273996839-1i1s9ivq54eksso8bd8t2rciufcnitrg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgW2XVC4YhB9wwhe8JxrcX-uFZ0RY6W-o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1080273996839-1i1s9ivq54eksso8bd8t2rciufcnitrg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
