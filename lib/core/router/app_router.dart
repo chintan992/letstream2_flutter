@@ -9,6 +9,8 @@ import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/application/auth_provider.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/watch_history/presentation/watch_history_screen.dart';
+import '../../features/watchlist/presentation/watchlist_screen.dart';
+import '../../features/favorites/presentation/favorites_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final isAuthenticated = ref.watch(isAuthenticatedProvider);
@@ -91,6 +93,14 @@ GoRoute(
     GoRoute(
       path: '/profile',
       builder: (context, state) => const ProfileScreen(),
+    ),
+    GoRoute(
+      path: '/watchlist',
+      builder: (context, state) => const WatchlistScreen(),
+    ),
+    GoRoute(
+      path: '/favorites',
+      builder: (context, state) => const FavoritesScreen(),
     ),
   ],
   );
