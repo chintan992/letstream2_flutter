@@ -20,8 +20,8 @@ class ProfileHeader extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Theme.of(context).primaryColor.withOpacity(0.8),
-            Theme.of(context).primaryColor.withOpacity(0.2),
+            Theme.of(context).primaryColor.withValues(alpha: 0.8),
+            Theme.of(context).primaryColor.withValues(alpha: 0.2),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -62,7 +62,7 @@ class ProfileHeader extends StatelessWidget {
             email,
             style: TextStyle(
               fontSize: 16,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
           ),
           const SizedBox(height: 16),
@@ -74,7 +74,7 @@ class ProfileHeader extends StatelessWidget {
             icon: const Icon(Icons.edit, size: 16),
             label: const Text('Edit Profile'),
             style: OutlinedButton.styleFrom(
-              side: BorderSide(color: Colors.white.withOpacity(0.5)),
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
               foregroundColor: Colors.white,
             ),
           ),

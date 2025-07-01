@@ -5,17 +5,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../../core/services/video_sources_service.dart';
 import '../../../core/models/video_source.dart';
+import '../../../core/services/watch_history_service.dart';
 
 class PlayerScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> media;
   final int? season;
   final int? episode;
+  final String? title;
+  final String? posterPath;
 
   const PlayerScreen({
     super.key,
     required this.media,
     this.season,
     this.episode,
+    this.title,
+    this.posterPath,
   });
 
   @override
@@ -28,6 +33,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> with WidgetsBinding
   bool _showControls = true;
   Timer? _controlsTimer;
   bool _isLoading = true;
+  DateTime? _watchStartTime;
+  Timer? _progressTimer;
 
   @override
   void initState() {
@@ -42,6 +49,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> with WidgetsBinding
     WidgetsBinding.instance.removeObserver(this);
     _resetOrientation();
     _controlsTimer?.cancel();
+    _progressTimer?.cancel();
+    _saveWatchHistory();
     super.dispose();
   }
 
@@ -116,6 +125,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> with WidgetsBinding
               setState(() {
                 _isLoading = false;
               });
+              _startWatchTracking();
             },
             // Strictly control navigation
             onNavigationRequest: (NavigationRequest request) {
@@ -241,6 +251,60 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> with WidgetsBinding
           });
         }
       });
+    }
+  }
+
+  void _startWatchTracking() {
+    _watchStartTime = DateTime.now();
+    
+    // Update watch history every 30 seconds
+    _progressTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      _updateWatchProgress();
+    });
+  }
+
+  void _updateWatchProgress() {
+    if (_watchStartTime == null) return;
+    
+    final watchDuration = DateTime.now().difference(_watchStartTime!).inSeconds;
+    _saveWatchHistoryData(watchDuration: watchDuration);
+  }
+
+  void _saveWatchHistory() {
+    if (_watchStartTime == null) return;
+    
+    final watchDuration = DateTime.now().difference(_watchStartTime!).inSeconds;
+    // Only save if watched for at least 30 seconds
+    if (watchDuration >= 30) {
+      _saveWatchHistoryData(watchDuration: watchDuration, isFinal: true);
+    }
+  }
+
+  void _saveWatchHistoryData({required int watchDuration, bool isFinal = false}) async {
+    try {
+      final watchHistoryService = ref.read(watchHistoryServiceProvider);
+      final mediaId = widget.media['id'] as int;
+      final mediaType = widget.media['type'] ?? 'movie';
+      
+      // Use provided title or fallback to generic title
+      final title = widget.title ?? 
+                   (mediaType == 'tv' ? 'TV Show Episode' : 'Movie');
+      
+      await watchHistoryService.addToWatchHistory(
+        mediaId: mediaId,
+        mediaType: mediaType,
+        title: title,
+        posterPath: widget.posterPath,
+        seasonNumber: widget.season,
+        episodeNumber: widget.episode,
+        duration: watchDuration,
+        // For now, we don't have exact position tracking
+        // In a real implementation, you'd get this from the video player
+        watchPosition: isFinal ? watchDuration : null,
+      );
+    } catch (e) {
+      // Silently handle errors to not disrupt playback
+      debugPrint('Error saving watch history: $e');
     }
   }
 

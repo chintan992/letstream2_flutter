@@ -58,7 +58,7 @@ class _CustomAppBarState extends State<CustomAppBar> with SingleTickerProviderSt
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black87.withOpacity(0.7),
+      barrierColor: Colors.black87.withValues(alpha: 0.7),
       transitionAnimationController: _menuController,
       builder: (context) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -93,6 +93,10 @@ class _CustomAppBarState extends State<CustomAppBar> with SingleTickerProviderSt
               }),
               _buildMenuItem(Icons.favorite, 'Favorites', () {
                 context.go('/favorites');
+                Navigator.pop(context);
+              }),
+              _buildMenuItem(Icons.history, 'Watch History', () {
+                context.go('/history');
                 Navigator.pop(context);
               }),
               _buildMenuItem(Icons.account_circle, 'Profile', () {
@@ -141,7 +145,7 @@ class _CustomAppBarState extends State<CustomAppBar> with SingleTickerProviderSt
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.black.withOpacity(0.7 * scrollProgress),
+            Colors.black.withValues(alpha: 0.7 * scrollProgress),
             Colors.transparent,
           ],
         ),

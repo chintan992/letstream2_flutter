@@ -8,6 +8,7 @@ import '../../features/search/presentation/search_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/application/auth_provider.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/watch_history/presentation/watch_history_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final isAuthenticated = ref.watch(isAuthenticatedProvider);
@@ -50,10 +51,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         final season = int.tryParse(params['season'] ?? '');
         final episode = int.tryParse(params['episode'] ?? '');
         final mediaType = params['type'] ?? 'movie';
+        final title = params['title'];
+        final posterPath = params['poster'];
         return PlayerScreen(
           media: {'id': id, 'type': mediaType},
           season: season,
           episode: episode,
+          title: title,
+          posterPath: posterPath,
         );
       },
     ),
@@ -78,6 +83,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     GoRoute(
       path: '/login',
       builder: (context, state) => const LoginScreen(),
+    ),
+GoRoute(
+      path: '/history',
+      builder: (context, state) => const WatchHistoryScreen(),
     ),
     GoRoute(
       path: '/profile',
@@ -119,10 +128,14 @@ final appRouter = GoRouter(
         final season = int.tryParse(params['season'] ?? '');
         final episode = int.tryParse(params['episode'] ?? '');
         final mediaType = params['type'] ?? 'movie';
+        final title = params['title'];
+        final posterPath = params['poster'];
         return PlayerScreen(
           media: {'id': id, 'type': mediaType},
           season: season,
           episode: episode,
+          title: title,
+          posterPath: posterPath,
         );
       },
     ),
